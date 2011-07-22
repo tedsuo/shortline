@@ -8,13 +8,11 @@
     "url": "git://github.com/tedsuo/Job-Board.git"
   },
   "engines": {
-    "node": "~v0.4.6"
+    "node": ">=0.4.1"
   },
   "dependencies": {
-    "mongodb": ">=0.9.6"
-  },
-  "scripts":{
-    "install":"./bin/install.sh"
+    "mongodb": ">=0.9.6",
+    "expresso": ">=0.8.1"
   },
   "main" : "job_board",
   "directories" : { 
