@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+JB = require('../job_board');
+require('mongo');
+
+function execute_command(commands){
+  var command = process.argv[2];
+  if(Object.keys(commands).indexOf(command) !== -1){
+    commands[command]();
+  } else {
+    commands.help();
+  }
+}
+
+commands = {
+
+  start:function(port){
+    var port = process.argv[3] || 80;
+    console.log('JobBoard Started, listening on port '+port);
+  },
+  
+  stop:function(port){
+    console.log('JobBoard stop');
+  },
+
+  restart:function(port){
+    console.log('JobBoard stop');
+  },
+  
+  ls:function(){
+    console.log('KEY : QUEUE');
+    console.log('we-r-1.org 8');
+    console.log('events.ran.org 4');
+    console.log('app.learn.radicaldesigns.org 0');
+  },
+  
+  add:function(){
+    var slug = process.argv[3];
+    var endpoint = process.argv[4];
+    console.log('added '+slug+' pointed at'+endpoint);
+  },
+  
+  remove:function(){
+    var slug = process.argv[3];
+  },
+  
+  rewind:function(){},
+  
+  help:function(){
+  	console.log('LIST OF COMMANDS');
+    console.log('start <port>');
+    console.log('stop');
+    console.log('add <key> <end_point> -c <concurrency> -p');
+    console.log('ls');
+    console.log('update');
+    console.log('remove');
+    console.log('rewind');
+    console.log('help');
+  }
+}
+
+execute_command(commands);

@@ -1,4 +1,4 @@
-# JOB PROCESSOR
+# JOB BOARD
 
 ## Components
 - Receiver

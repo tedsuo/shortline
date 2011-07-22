@@ -1,0 +1,25 @@
+{
+  "author": "tedsuo",
+  "name": "job_board",
+  "description": "Job Queueing done easy",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tedsuo/Job-Board.git"
+  },
+  "engines": {
+    "node": "~v0.4.6"
+  },
+  "dependencies": {
+    "mongodb": ">=0.9.6"
+  },
+  "scripts":{
+    "install":'./bin/install.sh'
+  },
+  "main" : "job_board",
+  "directories" : { 
+    "lib" : "./lib",
+    "bin" : "./bin"
+  },
+  "devDependencies": {}
+}
