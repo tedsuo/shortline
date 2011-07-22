@@ -14,7 +14,7 @@
     "mongodb": ">=0.9.6"
   },
   "scripts":{
-    "install":'./bin/install.sh'
+    "install":"./bin/install.sh"
   },
   "main" : "job_board",
   "directories" : { 
