@@ -1,7 +1,5 @@
 #!/usr/bin/env node
-JB = require('../job_board');
-require('mongodb');
-
+forever = require("forever");
 function execute_command(commands){
   var command = process.argv[2];
   if(Object.keys(commands).indexOf(command) !== -1){
@@ -12,18 +10,31 @@ function execute_command(commands){
 }
 
 commands = {
-
   start:function(port){
     var port = process.argv[3] || 80;
-    console.log('JobBoard Started, listening on port '+port);
+    job_board = forever.startDaemon(__dirname + '/../job_board.js',{
+      max: 1,
+      pidFile: '/var/run/job_board.pid',
+      silent: false,
+      logFile: '/var/log/job_board.log',
+      options: [port]
+    });
+
+    /*job_board.on('start', function(process, data){
+      console.log('JobBoard Started, listening on port ' + port);
+    });*/
+    forever.startServer(job_board);
+    console.log('JobBoard Started!');
+    
   },
   
-  stop:function(port){
-    console.log('JobBoard stop');
+  stop:function(){
+    forever.stop(0);
   },
 
   restart:function(port){
-    console.log('JobBoard stop');
+    stop();
+    start(port);
   },
   
   ls:function(){
