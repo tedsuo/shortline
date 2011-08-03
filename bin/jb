@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 forever = require("forever");
+exec = require("child_process").exec
 function execute_command(commands){
   var command = process.argv[2];
   if(Object.keys(commands).indexOf(command) !== -1){
@@ -8,33 +9,39 @@ function execute_command(commands){
     commands.help();
   }
 }
-
+// jb start -p 3030 -c jb_conf
 commands = {
   start:function(port){
     var port = process.argv[3] || 80;
-    job_board = forever.startDaemon(__dirname + '/../job_board.js',{
-      max: 1,
-      pidFile: '/var/run/job_board.pid',
-      silent: false,
-      logFile: '/var/log/job_board.log',
-      options: [port]
+    exec("forever start --pidfile /var/run/job_board.pid -l /var/log/job_board.log " + __dirname + "/../job_board.js " + port, function(error){
+      if(!error) {
+        console.log("JobBoard Started running on port " + port +".");
+      } else {
+        console.log("ERROR: Job Board could not start: " + error);
+      }
     });
 
-    /*job_board.on('start', function(process, data){
-      console.log('JobBoard Started, listening on port ' + port);
-    });*/
-    forever.startServer(job_board);
-    console.log('JobBoard Started!');
     
   },
   
   stop:function(){
-    forever.stop(0);
+    exec("forever stop " + __dirname + "/../job_board.js", function(error){
+      if(!error) {
+        console.log("JobBoard got a pink slip.");
+      } else {
+        console.log("ERROR: Job Board could not quit: " + error);
+      }
+    });
   },
 
   restart:function(port){
-    stop();
-    start(port);
+    exec("forever restart " + __dirname + "/../job_board.js", function(error){
+      if(!error) {
+        console.log("JobBoard Rebooted Succesfully.");
+      } else {
+        console.log("ERROR: Job Board restart fail: " + error);
+      }
+    });
   },
   
   ls:function(){

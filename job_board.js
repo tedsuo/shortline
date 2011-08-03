@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 net = require('net');
 fs = require('fs');
 mongodb = require('mongodb');
