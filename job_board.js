@@ -2,12 +2,15 @@
 net = require('net');
 fs = require('fs');
 mongodb = require('mongodb');
+sys = require('sys');
 
-board = require('./lib/Board');
-
-var server = net.createServer(function (c) {
-  c.write('hello\r\n');
-  c.pipe(c);
-});
-server.listen(8124, 'localhost');
+net.createServer(function (stream){
+  if(stream.remoteAddress == "127.0.0.1"){
+  stream.addListener( 'data', function(data) {
+    sys.puts(data);
+  });
+  } else {
+    stream.end("Source Unauthorized\n");
+  }
+}).listen(8124);
 console.log("Started listening on TCP/8124");
