@@ -1,12 +1,30 @@
 #!/usr/bin/env node
-forever = require("forever");
-exec = require("child_process").exec
+var exec = require("child_process").exec;
+var models = require('../models.js');
+var argv = require('optimist').argv;
+var config = require('../config');
+var _ = require('underscore');
+
+function print_help(){
+  console.log('LIST OF COMMANDS');
+  console.log('start <port>');
+  console.log('stop');
+  console.log('add <name> <host> [-c <concurrency>] [-p <port>]');
+  console.log('addpath <receiver_name> <name> <url> [-t <timeout>]');
+  console.log('ls');
+  console.log('update');
+  console.log('remove');
+  console.log('rewind');
+  console.log('help');
+}
+
 function execute_command(commands){
   var command = process.argv[2];
   if(Object.keys(commands).indexOf(command) !== -1){
     commands[command]();
   } else {
     commands.help();
+    process.exit();
   }
 }
 // jb start -p 3030 -c jb_conf
@@ -52,9 +70,67 @@ commands = {
   },
   
   add:function(){
-    var slug = process.argv[3];
-    var endpoint = process.argv[4];
-    console.log('added '+slug+' pointed at'+endpoint);
+    var name = process.argv[3];
+    var host = process.argv[4];
+    var concurrency = Number(argv.c) || config.default_receiver_concurrency;
+    var port = Number(argv.p) || config.default_receiver_port;
+
+    if(!name || !host || !_.isNumber(concurrency) || !_.isNumber(port)){
+      print_help();
+      process.exit();
+      console.log('shit balls fuck');
+      return;
+    }
+
+    var options = {
+      name: name,
+      host: host,
+      concurrency: concurrency,
+      port: port
+    };
+
+    var receiver = new models.Receiver(options);
+    receiver.save(function(err){
+      if(err){
+        console.log('There has been an error saving this receiver.');
+        throw err;
+      } else {
+        console.log('You have saved this receiver');
+        console.log(options);
+      }
+    });
+  },
+
+  addpath: function(){
+    var o = {
+      receiver_name: process.argv[3],
+      name: process.argv[4],
+      url: process.argv[5],
+      timeout: Number(argv.t) || config.default_receiver_timeout
+    };
+
+    if(!o.receiver_name || !o.name || !o.url || !_.isNumber(o.timeout)){
+      print_help();
+      process.exit();
+      return;
+    }
+
+    models.Receiver.find_by_name(o.receiver_name, function(err, receiver){
+      if(err){
+        console.log('There has been an error finding the record to add paths to');
+        throw err;
+      }
+      receiver.paths.push({name: o.name, url: o.url, timeout: o.timeout});
+      receiver.save(function(err){
+        if(err){
+          console.log('There has been an error saving.');
+          throw err;
+        }
+        console.log('You have saved this path.');
+        console.log(o);
+        process.exit();
+      });
+    });
   },
   
   remove:function(){
@@ -64,15 +140,7 @@ commands = {
   rewind:function(){},
   
   help:function(){
-  	console.log('LIST OF COMMANDS');
-    console.log('start <port>');
-    console.log('stop');
-    console.log('add <key> <end_point> -c <concurrency> -p');
-    console.log('ls');
-    console.log('update');
-    console.log('remove');
-    console.log('rewind');
-    console.log('help');
+    print_help();
   }
 }
 

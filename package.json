@@ -1,5 +1,5 @@
 {
-  "author": "tedsuo",
+  "author": "tedsuo,Hainish,jackaperkins",
   "name": "job_board",
   "description": "Job Queueing done easy",
   "version": "0.0.0",
@@ -11,9 +11,12 @@
     "node": ">=0.4.1"
   },
   "dependencies": {
-    "mongodb": ">=0.9.6",
     "expresso": ">=0.8.1",
-    "forever": ">=0.6.2"
+    "express": ">=2.4.6",
+    "underscore": "=1.1.7",
+    "async": ">=0.1.10",
+    "mongoose": ">=2.3.0",
+    "optimist": ">=0.2.6"
   },
   "main" : "job_board",
   "directories" : { 
