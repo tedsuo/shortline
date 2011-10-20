@@ -1,16 +1,18 @@
 #!/usr/bin/env node
-var fs = require('fs');
 var express = require('express');
 var _ = require('underscore');
 var models = require('./models');
 var async = require('async');
 var config = require('./config');
+var job_processor = require('./job_processor');
 
 var trusted_ips = [
   '127.0.0.1'
 ];
 
 var receiver = express.createServer();
+
+var job_queues = {};
 
 receiver.get('/', function(req, res){
   res.send("Welcome to JobBoard.  Please read the <a href='https://github.com/tedsuo/Job-Board'>documentation</a> to use.");
@@ -44,13 +46,23 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       return;
     }
 
+		if(!results.receiver){
+			res.end("No receiver by that name found.");
+			return;
+		}
+
     var receiver = results.receiver;
+
+		if(!job_queues[receiver.name]){
+			job_queues[receiver.name] = new job_processor(receiver.concurrency, receiver.host, receiver.port);
+		}
+
     var path = _.detect(receiver.paths, function(path){
       return path.name == req.params.path_name; 
     });
 
     if(!path){
-      res.end('No such path defined!');
+      res.end('No path by that name found.');
       return;
     }
 
@@ -67,6 +79,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       if(err){
         res.end('Job failed to save');
       }else{
+				job_queues[receiver.name].addToQueue(job.path, job.payload, job.timeout);
         res.end('Job saved. Good job!');
       }
     });
@@ -74,6 +87,5 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
 });
 
 receiver.listen(8009);
-
 
 console.log("Started listening on TCP/8009");

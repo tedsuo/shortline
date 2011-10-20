@@ -34,8 +34,10 @@ commands = {
     exec("forever start --pidfile /var/run/job_board.pid -l /var/log/job_board.log " + __dirname + "/../job_board.js " + port, function(error){
       if(!error) {
         console.log("JobBoard Started running on port " + port +".");
+				process.exit();
       } else {
         console.log("ERROR: Job Board could not start: " + error);
+				process.exit();
       }
     });
 
@@ -46,8 +48,10 @@ commands = {
     exec("forever stop " + __dirname + "/../job_board.js", function(error){
       if(!error) {
         console.log("JobBoard got a pink slip.");
+				process.exit();
       } else {
         console.log("ERROR: Job Board could not quit: " + error);
+				process.exit();
       }
     });
   },
@@ -56,8 +60,10 @@ commands = {
     exec("forever restart " + __dirname + "/../job_board.js", function(error){
       if(!error) {
         console.log("JobBoard Rebooted Succesfully.");
+				process.exit();
       } else {
         console.log("ERROR: Job Board restart fail: " + error);
+				process.exit();
       }
     });
   },
@@ -78,7 +84,6 @@ commands = {
     if(!name || !host || !_.isNumber(concurrency) || !_.isNumber(port)){
       print_help();
       process.exit();
-      console.log('shit balls fuck');
       return;
     }
 
@@ -93,10 +98,11 @@ commands = {
     receiver.save(function(err){
       if(err){
         console.log('There has been an error saving this receiver.');
-        throw err;
+				process.exit();
       } else {
         console.log('You have saved this receiver');
         console.log(options);
+				process.exit();
       }
     });
   },
@@ -118,13 +124,13 @@ commands = {
     models.Receiver.find_by_name(o.receiver_name, function(err, receiver){
       if(err){
         console.log('There has been an error finding the record to add paths to');
-        throw err;
+				process.exit();
       }
       receiver.paths.push({name: o.name, url: o.url, timeout: o.timeout});
       receiver.save(function(err){
         if(err){
           console.log('There has been an error saving.');
-          throw err;
+					process.exit();
         }
         console.log('You have saved this path.');
         console.log(o);
