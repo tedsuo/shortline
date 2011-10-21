@@ -79,11 +79,16 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       if(err){
         res.end('Job failed to save');
       }else{
-				job_queues[receiver.name].addToQueue(job.path, job.payload, job.timeout);
+				job_queues[receiver.name].push(job.path, job.payload, job.timeout);
+        throw "blah";
         res.end('Job saved. Good job!');
       }
     });
   });
+});
+
+receiver.configure('development', function(){
+  receiver.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
 receiver.listen(8009);
