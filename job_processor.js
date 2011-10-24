@@ -20,11 +20,20 @@ var JobProcessor = function(concurrency, host, port){
 //util.inherits(JobProcessor, EventEmitter);
 
 JobProcessor.prototype.push = function(url, payload, timeout){
-  var options = _.extend({path: url}, this.options);
-  var req = http.request(options);
+  var options = _.extend({path: '/'+url}, this.options);
+  console.log(options);
+  var req = http.request(options, function(res){
+    res.on('data', function(chunk){
+      console.log('body: '+chunk);
+    });
+  });
   req.write(payload);
   req.end();
+  req.on('error', function(err){
+    console.log('Error: '+err.message);
+  });
   setTimeout(function(){
+    console.log("Timeout!");
     req.abort();
   }, timeout);
   //this.emit('push');

@@ -12,6 +12,11 @@ var trusted_ips = [
 
 var receiver = express.createServer();
 
+receiver.configure('development', function(){
+  receiver.use(receiver.router);
+  receiver.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
 var job_queues = {};
 
 receiver.get('/', function(req, res){
@@ -46,16 +51,16 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       return;
     }
 
-		if(!results.receiver){
-			res.end("No receiver by that name found.");
-			return;
-		}
+    if(!results.receiver){
+      res.end("No receiver by that name found.");
+      return;
+    }
 
     var receiver = results.receiver;
 
-		if(!job_queues[receiver.name]){
-			job_queues[receiver.name] = new job_processor(receiver.concurrency, receiver.host, receiver.port);
-		}
+    if(!job_queues[receiver.name]){
+      job_queues[receiver.name] = new job_processor(receiver.concurrency, receiver.host, receiver.port);
+    }
 
     var path = _.detect(receiver.paths, function(path){
       return path.name == req.params.path_name; 
@@ -79,16 +84,11 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       if(err){
         res.end('Job failed to save');
       }else{
-				job_queues[receiver.name].push(job.path, job.payload, job.timeout);
-        throw "blah";
+        job_queues[receiver.name].push(job.path, job.payload, job.timeout);
         res.end('Job saved. Good job!');
       }
     });
   });
-});
-
-receiver.configure('development', function(){
-  receiver.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
 receiver.listen(8009);
