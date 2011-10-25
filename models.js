@@ -2,12 +2,18 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 mongoose.connect(process.env.MONGO_CONNECT || 'mongodb://localhost/jobboard');
 
+var Path = new Schema({
+  name: String,
+  url: String,
+  timeout: Number
+});
+
 var Receiver = new Schema({
   name: String,
   host: String,
   port: String,
   concurrency: String,
-  paths: [] // path: { name: String, url:String, timeout: Number }
+  paths: [Path]
 });
 
 Receiver.statics.find_by_name = function(name, cb){

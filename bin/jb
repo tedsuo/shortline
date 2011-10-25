@@ -8,48 +8,86 @@ var _ = require('underscore');
 function print_help(){
   console.log('LIST OF COMMANDS');
   console.log('----------------');
-  console.log('start <port>');
+  console.log('');
+  console.log('start');
+  console.log('   * Start the job_board daemon');
+  console.log('');
   console.log('stop');
+  console.log('   * Stop the job_board daemon');
+  console.log('');
+  console.log('restart');
+  console.log('   * Restart the job_board daemon');
+  console.log('');
   console.log('add receiver <name> <host> [-c <concurrency>] [-p <port>]');
+  console.log('   * Add a receiver for the given host');
+  console.log('');
   console.log('add path <receiver_name> <name> <url> [-t <timeout>]');
+  console.log('   * Add an endpoint path for the given receiver.');
+  console.log('');
   console.log('update receiver <name> [-n <new_name>] [-h <host>] [-c <concurrency>] [-p <port>]');
+  console.log('   * Update given receiver');
+  console.log('');
   console.log('update path <receiver_name> <name> [-n <new_name>] [-u <url>] [-t <timeout>]');
-  console.log('ls receivers');
-  console.log('remove');
+  console.log('   * Update given path');
+  console.log('');
+  console.log('ls [-r <receiver_name>]');
+  console.log('   * List receivers and paths');
+  console.log('');
+  console.log('status');
+  console.log('   * List current jobs');
+  console.log('');
+  console.log('remove receiver <name>');
+  console.log('   * Remove given receiver, and all children paths');
+  console.log('');
+  console.log('remove path <receiver_name> <name>');
+  console.log('   * Remove given path');
+  console.log('');
   console.log('rewind');
+  console.log('');
   console.log('help');
+  console.log('   * Display this dialog');
+}
+
+function parent_dir(){
+  var dir_split = __dirname.split('/');
+  return dir_split.slice(0,dir_split.length - 1).join('/');
 }
 
 function execute_command(commands){
   var command = process.argv[2];
-  if(Object.keys(commands).indexOf(command) !== -1){
+  if(_.include(Object.keys(commands), command)){
     commands[command]();
   } else {
-    commands.help();
+    print_help();
     process.exit();
   }
 }
 // jb start -p 3030 -c jb_conf
 commands = {
   start:function(port){
-    var port = process.argv[3] || 80;
-    exec("forever start --pidfile /var/run/job_board.pid -l /var/log/job_board.log " + __dirname + "/../job_board.js " + port, function(error){
+    if(process.getuid() !== 0){
+      console.log("start must be run as root. exiting..");
+      process.exit();
+    }
+    exec("forever start --pidfile /var/run/job_board.pid -m 1 -a -l /var/log/job_board.log " + parent_dir() + "/job_board.js", function(error){
       if(!error) {
-        console.log("JobBoard Started running on port " + port +".");
+        console.log("JobBoard started");
 				process.exit();
       } else {
         console.log("ERROR: Job Board could not start: " + error);
 				process.exit();
       }
     });
-
-    
   },
   
   stop:function(){
-    exec("forever stop " + __dirname + "/../job_board.js", function(error){
+    if(process.getuid() !== 0){
+      console.log("stop must be run as root. exiting..");
+      process.exit();
+    }
+    exec("forever stop " + parent_dir() + "/job_board.js", function(error){
       if(!error) {
-        console.log("JobBoard got a pink slip.");
+        console.log("JobBoard stopped");
 				process.exit();
       } else {
         console.log("ERROR: Job Board could not quit: " + error);
@@ -59,9 +97,13 @@ commands = {
   },
 
   restart:function(port){
-    exec("forever restart " + __dirname + "/../job_board.js", function(error){
+    if(process.getuid() !== 0){
+      console.log("restart must be run as root. exiting..");
+      process.exit();
+    }
+    exec("forever restart " + parent_dir() + "/job_board.js", function(error){
       if(!error) {
-        console.log("JobBoard Rebooted Succesfully.");
+        console.log("JobBoard restarted succesfully.");
 				process.exit();
       } else {
         console.log("ERROR: Job Board restart fail: " + error);
@@ -71,13 +113,33 @@ commands = {
   },
   
   ls:function(){
-    switch(process.argv[3]){
-      case "receivers":
-        
-      default:
-        print_help();
-        process.exit();
+    var options = {};
+    if(argv.r){
+      options.name = argv.r;
+      console.log("List Receiver with name \""+argv.r+"\"");
+    } else {
+      console.log("List of Receivers");
     }
+    console.log("");
+    models.Receiver.find(options, function(err, docs){
+      if(err){
+        console.log(err);
+        process.exit();
+      }
+      _.each(docs, function(doc){
+        console.log("["+doc.name+"]");
+        console.log("  Host:          "+doc.host);
+        console.log("  Port:          "+doc.port);
+        console.log("  Concurrency:   "+doc.concurrency);
+        _.each(doc.paths, function(path){
+          console.log("  →  Path Name:  "+path.name);
+          console.log("     Timeout:    "+path.timeout);
+          console.log("     URL:        "+path.url);
+        })
+        console.log("");
+      })
+      process.exit();
+    });
   },
   
   add:function(){
@@ -185,7 +247,7 @@ commands = {
         }
         models.Receiver.find_by_name(receiver_name, function(err, receiver){
           if(err){
-            console.log('There has been an error finding the receiver to update.');
+            console.log('There has been an error finding the receiver for the path to update.');
             process.exit();
           }
           var pathIndex = _.indexOf(receiver.paths, _.detect(receiver.paths, function(path){
@@ -198,7 +260,7 @@ commands = {
           if(argv.n) receiver.paths[pathIndex].name = argv.n;
           if(argv.u) receiver.paths[pathIndex].url = argv.u;
           if(argv.t) receiver.paths[pathIndex].timeout = Number(argv.t);
-          receiver.paths[pathIndex].save(function(err){
+          receiver.save(function(err){
             if(err){
               console.log('There has been an error updating the path.');
               process.exit();
@@ -215,14 +277,60 @@ commands = {
   },
 
   remove:function(){
-    var slug = process.argv[3];
+    switch(process.argv[3]){
+      case "receiver":
+        var name = process.argv[4];
+        if(!name){
+          print_help();
+          process.exit();
+        }
+        models.Receiver.find_by_name(name, function(err, receiver){
+          if(err){
+            console.log('There has been an error finding the receiver to remove.');
+            process.exit();
+          }
+          receiver.remove();
+          console.log('You have removed this receiver.');
+          process.exit();
+        });
+        break;
+      case "path":
+        var receiver_name = process.argv[4];
+        var name = process.argv[5];
+        if(!name || !receiver_name){
+          print_help();
+          process.exit();
+        }
+        models.Receiver.find_by_name(receiver_name, function(err, receiver){
+          if(err){
+            console.log('There has been an error finding the receiver for the path to remove.');
+            process.exit();
+          }
+          var pathIndex = _.indexOf(receiver.paths, _.detect(receiver.paths, function(path){
+            return path.name == name;
+          }));
+          if(pathIndex == -1){
+            console.log('There has been an error finding the path to remove.');
+            process.exit();
+          }
+          receiver.paths[pathIndex].remove();
+          receiver.save(function(err){
+            if(err){
+              console.log('There has been an error removing the path.');
+              process.exit();
+            }
+            console.log('You have removed this path.');
+            process.exit();
+          });
+        });
+        break;
+      default:
+        print_help();
+        process.exit();
+    }
   },
   
-  rewind:function(){},
-  
-  help:function(){
-    print_help();
-  }
+  rewind:function(){}
 }
 
 execute_command(commands);
