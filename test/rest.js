@@ -13,6 +13,7 @@ spawn = require('child_process').spawn
 assert = require('assert');
 fs = require('fs');
 
+
 var log = fs.createWriteStream(JB_STDOUT_LOG);  
 var err_log = fs.createWriteStream(JB_STDERR_LOG);
 jb = spawn(JB_PATH,['-p',JB_PORT]);

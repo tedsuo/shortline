@@ -6,10 +6,11 @@ var config = require('../config');
 var _ = require('underscore');
 
 function print_help(){
-  console.log('LIST OF COMMANDS');
-  console.log('----------------');
+  console.log('--------------------------');
+  console.log('     LIST OF COMMANDS');
+  console.log('--------------------------');
   console.log('');
-  console.log('start');
+  console.log('start [-m <mode>]');
   console.log('   * Start the job_board daemon');
   console.log('');
   console.log('stop');
@@ -46,6 +47,7 @@ function print_help(){
   console.log('');
   console.log('help');
   console.log('   * Display this dialog');
+  console.log('');
 }
 
 function parent_dir(){
@@ -69,9 +71,11 @@ commands = {
       console.log("start must be run as root. exiting..");
       process.exit();
     }
-    exec("forever start --pidfile /var/run/job_board.pid -m 1 -a -l /var/log/job_board.log " + parent_dir() + "/job_board.js", function(error){
+    var preexec = "";
+    if(argv['m']) preexec = "NODE_ENV="+argv.m+" ";
+    exec(preexec+"forever start --pidfile /var/run/job_board.pid -m 1 -a -l /var/log/job_board.log " + parent_dir() + "/job_board.js", function(error, response){
       if(!error) {
-        console.log("JobBoard started");
+        console.log(response);
 				process.exit();
       } else {
         console.log("ERROR: Job Board could not start: " + error);
@@ -85,9 +89,9 @@ commands = {
       console.log("stop must be run as root. exiting..");
       process.exit();
     }
-    exec("forever stop " + parent_dir() + "/job_board.js", function(error){
+    exec("forever stop " + parent_dir() + "/job_board.js", function(error, response){
       if(!error) {
-        console.log("JobBoard stopped");
+        console.log(response);
 				process.exit();
       } else {
         console.log("ERROR: Job Board could not quit: " + error);
