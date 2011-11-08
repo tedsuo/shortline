@@ -5,7 +5,7 @@ var _ = require('underscore');
 
 var JobProcessor = function(concurrency, host, port){
   this.queue = []; 
-  var httpAgent = http.getAgent(host, port);
+  var httpAgent = new http.Agent();
   httpAgent.maxSockets = concurrency;
   this.options = {
     host: host,

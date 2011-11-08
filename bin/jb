@@ -293,9 +293,14 @@ commands = {
             console.log('There has been an error finding the receiver to remove.');
             process.exit();
           }
-          receiver.remove();
-          console.log('You have removed this receiver.');
-          process.exit();
+          receiver.remove(function(err){
+            if(err){
+              console.log(err);
+            } else {
+              console.log('You have removed this receiver.');
+            }
+            process.exit();
+          });
         });
         break;
       case "path":
