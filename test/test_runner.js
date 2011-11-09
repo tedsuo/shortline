@@ -1,14 +1,19 @@
+if(process.getuid() !== 0){
+  console.log("test_runner must be run as root. exiting..");
+  process.exit();
+}
+
 var spawn = require('child_process').spawn;
 var fs = require('fs');
 var async = require('async');
 var _ = require('underscore');
 var colors = require('colors');
 
-console.log("Running all tests....\n");
+console.log("Running all tests....");
 
 var run_test = function(test_path, done){
   var test = spawn('node',[test_path]);
-  console.log("Performing test:", test_path);
+  console.log("\n[".bold + "Performing test".blue.bold + ": " + test_path + "]".bold);
   test.stdout.on('data', function(data){
     process.stdout.write('I'.green + ' ' +data);
   });
