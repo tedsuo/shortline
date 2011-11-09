@@ -12,7 +12,7 @@ async.series([
     console.log("Start creates new job board process");
     fs.stat(pid_file, function(err,stats){
       assert.notEqual(err,null,'pid_file should not exist before start');
-      exec(BINPATH + ' start -m development', function(err, stdout, stderr){
+      exec(BINPATH + ' start -m test', function(err, stdout, stderr){
         fs.readFile(pid_file, function(err, data) {
           assert.equal(err,null,'pid_file should exist after start')
           pid = data.toString().trim();
@@ -26,11 +26,9 @@ async.series([
   },
   function(next){
     console.log('Start doesn\'t create multiple job board processes');
-    exec(BINPATH + ' start -m development', function(err, stdout, stderr){
+    exec(BINPATH + ' start -m test', function(err, stdout, stderr){
       fs.readFile(pid_file, function(err, data) {
         assert.equal(err,null,'pid_file should exist');
-        console.log('data tostring',data.toString().trim());
-        console.log('pidfile', pid);
         assert.equal(data.toString().trim(), pid, 'pid_file should not have changed');
         next();
       });
@@ -38,11 +36,3 @@ async.series([
   }
 ]);
 
-
-module.exports = {
-  'Start creates new job board process': function(){
-    var pid_file = '/var/run/job_board.pid';
-  },
-  'Start doesnt create multiple job board proccesses': function(){
-  }
-};

@@ -85,7 +85,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
         res.end('Job failed to save');
       }else{
         job_queues[receiver.name].push(job.path, job.payload, job.timeout);
-        res.end('Job saved. Good job!');
+        res.end(process.env.NODE_ENV+' Job saved. Good job!');
       }
     });
   });

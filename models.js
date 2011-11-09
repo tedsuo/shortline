@@ -1,6 +1,19 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-mongoose.connect(process.env.MONGO_CONNECT || 'mongodb://localhost/jobboard');
+
+var mongo_db = null;
+switch(process.env.NODE_ENV){
+  case "test":
+    mongo_db = "mongodb://localhost/jobboard_test";
+    break;
+  case "production":
+    mongo_db = 'mongodb://localhost/jobboard_production';
+    break;
+  default:
+    mongo_db = "mongodb://localhost/jobboard_development";
+    break;
+}
+mongoose.connect(mongo_db);
 
 var Path = new Schema({
   name: String,
