@@ -16,8 +16,8 @@ async.series([
       exec(BINPATH + ' stop', function(err, stdout, stderr){
         fs.stat(pid_file, function(err, stat) {
           assert.notEqual(err,null,'pid_file should not exist after stop');
-          exec('ps h -p ' + pid + ' | wc -l', function(err,stdout,stderr){
-            assert.equal(stdout.trim(), '0', 'job_board process should not exist');
+          exec('ps -p ' + pid + ' | wc -l', function(err,stdout,stderr){
+            assert.equal(stdout.trim(), '1', 'job_board process should not exist');
             next();
           });
         });
