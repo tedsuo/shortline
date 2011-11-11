@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 var exec = require("child_process").exec;
+var spawn = require("child_process").spawn;
 var argv = require('optimist').argv;
 var config = require('../config');
 var _ = require('underscore');
 var fs = require('fs');
+var colors = require('colors');
 if(argv["m"]){
   process.env.NODE_ENV = argv["m"];
 }
@@ -20,9 +22,6 @@ function print_help(){
   console.log('');
   console.log('stop');
   console.log('   * Stop the job_board daemon');
-  console.log('');
-  console.log('restart');
-  console.log('   * Restart the job_board daemon');
   console.log('');
   console.log('add receiver <name> <host> [-c <concurrency>] [-p <port>] [-m <mode>]');
   console.log('   * Add a receiver for the given host');
@@ -75,26 +74,16 @@ function execute_command(commands){
 // jb start -p 3030 -c jb_conf
 commands = {
   start:function(port){
-    if(process.getuid() !== 0){
-      console.log("start must be run as root. exiting..");
-      process.exit();
-    }
-    exec('forever list | grep '+ parent_dir() +'/job_board.js | wc -l', function(error, stdout){
+    exec('ps aux | grep '+ parent_dir() +'/job_board.js | grep -v grep | wc -l', function(error, stdout){
       if(error){
         console.log("ERROR: Job Board could not start: " + error);
       }
       if(stdout.trim() == '0'){
         var preexec = "";
-        if(argv['m']) preexec = "NODE_ENV="+argv.m+" ";
-        exec(preexec+"forever start --pidfile /var/run/job_board.pid -m 1 -a -l /var/log/job_board.log " + parent_dir() + "/job_board.js", function(error, response){
-          if(!error) {
-            console.log(response);
-            process.exit();
-          } else {
-            console.log("ERROR: Job Board could not start: " + error);
-            process.exit();
-          }
-        });
+        if(argv['m']) process.env.NODE_ENV = argv.m;
+        spawn("mobettah", [parent_dir() + "/job_board.js"]);
+        console.log("Job Board process started");
+        process.exit();
       } else {
         console.log("ERROR: An instance of Job Board is already running.");
         process.exit();
@@ -103,42 +92,23 @@ commands = {
   },
   
   stop:function(){
-    if(process.getuid() !== 0){
-      console.log("stop must be run as root. exiting..");
-      process.exit();
-    }
-    exec("forever stop --pidfile /var/run/job_board.pid " + parent_dir() + "/job_board.js", function(error, response){
-      if(!error) {
-        console.log(response);
-        fs.unlink('/var/run/job_board.pid', function(err){
-          if(err){
-            console.log(err);
-          }
-  				process.exit();
-        });
-      } else {
-        console.log("ERROR: Job Board could not quit: " + error);
-				process.exit();
+    fs.readFile("/tmp/mobettah.pid", function(err, data){
+      if(err){
+        console.log('ERROR: Could not stop job board: ' + err);
+        process.exit();
       }
+      exec("kill "+data.toString(), function(error, response){
+        if(!error) {
+          console.log("Job Board process stopped");
+          process.exit();
+        } else {
+          console.log("ERROR: Job Board could not quit: " + error);
+          process.exit();
+        }
+      });
     });
   },
 
-  restart:function(port){
-    if(process.getuid() !== 0){
-      console.log("restart must be run as root. exiting..");
-      process.exit();
-    }
-    exec("forever restart " + parent_dir() + "/job_board.js", function(error){
-      if(!error) {
-        console.log("JobBoard restarted succesfully.");
-				process.exit();
-      } else {
-        console.log("ERROR: Job Board restart fail: " + error);
-				process.exit();
-      }
-    });
-  },
-  
   ls:function(){
     var options = {};
     if(argv.r){
@@ -154,7 +124,7 @@ commands = {
         process.exit();
       }
       _.each(docs, function(doc){
-        console.log("["+doc.name+"]");
+        console.log(("["+doc.name.blue+"]").bold);
         console.log("  Host:          "+doc.host);
         console.log("  Port:          "+doc.port);
         console.log("  Concurrency:   "+doc.concurrency);

@@ -1,8 +1,3 @@
-if(process.getuid() !== 0){
-  console.log("test_runner must be run as root. exiting..");
-  process.exit();
-}
-
 var spawn = require('child_process').spawn;
 var fs = require('fs');
 var async = require('async');

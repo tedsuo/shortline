@@ -14,7 +14,7 @@ async.series([
       assert.notEqual(err,null,'pid_file should not exist before start');
       exec(BINPATH + ' start -m test', function(err, stdout, stderr){
         fs.readFile(pid_file, function(err, data) {
-          assert.equal(err,null,'pid_file should exist after start')
+          assert.equal(err,null,'pid_file should exist after start');
           pid = data.toString().trim();
           exec('ps -p ' + pid + ' | wc -l', function(err,stdout,stderr){
             assert.equal(stdout.trim(), '2', 'job_board process should exist');
