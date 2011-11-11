@@ -81,9 +81,13 @@ commands = {
       if(stdout.trim() == '0'){
         var preexec = "";
         if(argv['m']) process.env.NODE_ENV = argv.m;
-        spawn("mobettah", [parent_dir() + "/job_board.js"]);
-        console.log("Job Board process started");
-        process.exit();
+        var child = spawn("mobettah", [parent_dir() + "/job_board.js"]);
+        child.stdout.on('data', function(data){
+          if(data.toString().trim() == "Spawning a new child process"){
+            console.log("Job Board process started");
+            process.exit();
+          }
+        });
       } else {
         console.log("ERROR: An instance of Job Board is already running.");
         process.exit();

@@ -10,16 +10,12 @@ var pid_file = '/var/run/job_board.pid';
 async.series([
   function(next){
     console.log("Start creates new job board process");
-    fs.stat(pid_file, function(err,stats){
-      assert.notEqual(err,null,'pid_file should not exist before start');
+    exec('ps aux | grep job_board.js | grep -v grep | grep -v mobettah | wc -l', function(err, stdout){
+      assert.equal(stdout.trim(),'0','Job board process should not exist before start');
       exec(BINPATH + ' start -m test', function(err, stdout, stderr){
-        fs.readFile(pid_file, function(err, data) {
-          assert.equal(err,null,'pid_file should exist after start');
-          pid = data.toString().trim();
-          exec('ps -p ' + pid + ' | wc -l', function(err,stdout,stderr){
-            assert.equal(stdout.trim(), '2', 'job_board process should exist');
-            next();
-          });
+        exec('ps aux | grep job_board.js | grep -v grep | grep -v mobettah | wc -l', function(err, stdout){
+          assert.equal(stdout.trim(),'1','Job board process should exist after start');
+          next();
         });
       });
     });
@@ -27,9 +23,8 @@ async.series([
   function(next){
     console.log('Start doesn\'t create multiple job board processes');
     exec(BINPATH + ' start -m test', function(err, stdout, stderr){
-      fs.readFile(pid_file, function(err, data) {
-        assert.equal(err,null,'pid_file should exist');
-        assert.equal(data.toString().trim(), pid, 'pid_file should not have changed');
+      exec('ps aux | grep job_board.js | grep -v grep | grep -v mobettah | wc -l', function(err, stdout){
+        assert.equal(stdout.trim(),'1','jb start should not create multiple job board processes');
         next();
       });
     });
