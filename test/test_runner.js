@@ -8,7 +8,7 @@ console.log("Running all tests....");
 
 var run_test = function(test_path, done){
   var test = spawn('node',[test_path]);
-  console.log("\n[".bold + "Performing test".blue.bold + ": " + test_path + "]".bold);
+  console.log("\n[".bold + "Running".blue.bold + ": " + test_path + "]".bold);
   test.stdout.on('data', function(data){
     process.stdout.write('I'.green + ' ' +data);
   });
