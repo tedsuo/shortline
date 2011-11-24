@@ -6,10 +6,6 @@ var async = require('async');
 var config = require('./config');
 var job_processor = require('./job_processor');
 
-var trusted_ips = [
-  '127.0.0.1'
-];
-
 var receiver = express.createServer();
 
 receiver.configure('development', function(){
@@ -24,7 +20,7 @@ receiver.get('/', function(req, res){
 });
 
 receiver.post('/:receiver_name/:path_name', function(req, res){
-  if(!_.include(trusted_ips, req.client.remoteAddress)){
+  if(!_.include(config.trusted_ips, req.client.remoteAddress)){
     res.send("You are not authorized to push to JobBoard.");
     return;
   }
@@ -85,7 +81,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
         res.end('Job failed to save');
       }else{
         job_queues[receiver.name].push(job.path, job.payload, job.timeout);
-        res.end(process.env.NODE_ENV+' Job saved. Good job!');
+        res.end('Job saved. Good job!');
       }
     });
   });
