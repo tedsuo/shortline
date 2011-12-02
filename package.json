@@ -16,7 +16,8 @@
     "async": ">=0.1.15",
     "mongoose": ">=2.3.10",
     "optimist": ">=0.2.8",
-    "colors": ">=0.5.1"
+    "colors": ">=0.5.1",
+    "mobettah": ">=0.0.5"
   },
   "main" : "job_board",
   "directories" : { 

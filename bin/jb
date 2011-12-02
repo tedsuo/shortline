@@ -81,7 +81,7 @@ commands = {
       if(stdout.trim() == '0'){
         var preexec = "";
         if(argv['m']) process.env.NODE_ENV = argv.m;
-        var child = spawn("mobettah", [parent_dir() + "/job_board.js"]);
+        var child = spawn(parent_dir() + "/node_modules/mobettah/service.js", [parent_dir() + "/job_board.js"]);
         child.stdout.on('data', function(data){
           if(data.toString().indexOf("Started listening on TCP/") != -1){
             console.log("Job Board process started");
