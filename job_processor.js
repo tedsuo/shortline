@@ -22,25 +22,51 @@ var JobProcessor = function(concurrency, host, port){
 
 //util.inherits(JobProcessor, EventEmitter);
 
-JobProcessor.prototype.push = function(url, payload, timeout){
-  var options = _.extend({path: '/'+url}, this.options);
+JobProcessor.prototype.push = function(job){
+  var options = _.extend({path: '/'+job.path}, this.options);
+  var timeout_task;
   console.log(options);
   var req = http.request(options, function(res){
     res.on('data', function(chunk){
       console.log('body: '+chunk);
     });
+    res.on('end', function(){
+      console.log(res.statusCode);
+      clearTimeout(timeout_task);
+      if(res.statusCode == 200){
+        JobProcessor.setJobStatus(job, "complete");
+      } else {
+        JobProcessor.setJobStatus(job, "failed");
+      }
+    });
   });
-  req.write(payload);
+  req.write(job.payload);
   req.end();
   req.on('error', function(err){
+    clearTimeout(timeout_task);
+    JobProcessor.setJobStatus(job, "error");
     console.log('Error: '+err.message);
   });
-  setTimeout(function(){
+  timeout_task = setTimeout(function(){
+    req.removeAllListeners('error');
+    req.on('error', function(){});
+    JobProcessor.setJobStatus(job, "timeout");
     console.log("Timeout!");
     req.abort();
-  }, timeout);
+  }, job.timeout);
   //this.emit('push');
 };
+
+JobProcessor.setJobStatus = function(job, status){
+  job.status = status;
+  job.save(function(err){
+    if(err){
+      console.log('Job '+status+', status failed to save');
+    } else {
+      console.log('Job '+status+', status saved');
+    }
+  });
+}
 
 //JobProcessor.prototype.pushHandler = function(){
 //};

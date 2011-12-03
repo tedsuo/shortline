@@ -51,6 +51,9 @@ var Job = new Schema({
   host : String,
   port: String,
   receiver: [Receiver],
-  timeout : Number
+  timeout : Number,
+  status: String
+//  attempts: Number
 });
+
 exports.Job = mongoose.model('Job', Job);

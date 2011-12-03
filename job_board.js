@@ -73,14 +73,15 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       host: receiver.host,
       port: receiver.port || config.default_receiver_port,
       timeout: path.timeout || config.default_receiver_timeout,
-      receiver: receiver
+      receiver: receiver,
+      status: "incomplete"
     });
 
     job.save(function(err){
       if(err){
         res.end('Job failed to save');
       }else{
-        job_queues[receiver.name].push(job.path, job.payload, job.timeout);
+        job_queues[receiver.name].push(job);
         res.end('Job saved. Good job!');
       }
     });
