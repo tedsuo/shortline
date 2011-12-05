@@ -22,6 +22,7 @@ receiver.get('/', function(req, res){
 receiver.post('/:receiver_name/:path_name', function(req, res){
   if(!_.include(config.trusted_ips, req.client.remoteAddress)){
     res.send("You are not authorized to push to JobBoard.");
+    console.log('An unauthorized client tried to push to job board from ip ' + req.connection.remote_address);
     return;
   }
 
@@ -42,13 +43,13 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       });
     }
   }, function(err, results){
-    if(err){
-      res.end(err);
+    if(err){ res.end(err);
       return;
     }
 
     if(!results.receiver){
       res.end("No receiver by that name found.");
+      console.log("No receiver '" + req.params.receiver_name + "' found.");
       return;
     }
 
@@ -64,6 +65,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
 
     if(!path){
       res.end('No path by that name found.');
+      console.log("No path'" + req.params.path_name + "' found.");
       return;
     }
 
@@ -80,14 +82,16 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
     job.save(function(err){
       if(err){
         res.end('Job failed to save');
+        console.log('Job failed to save: ' + job);
       }else{
         job_queues[receiver.name].push(job);
         res.end('Job saved. Good job!');
+        console.log('Job saved. Good job!');
       }
     });
   });
 });
 
-receiver.listen(8009);
+receiver.listen(config.port);
 
-console.log("Started listening on TCP/8009");
+console.log("Job Board started listening on TCP/" + config.port);
