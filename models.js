@@ -41,8 +41,8 @@ Receiver.statics.find_by_name = function(name, cb){
       }
     }
   })
+};
 
-}
 exports.Receiver = mongoose.model('Receiver', Receiver);
 
 var Job = new Schema({
@@ -55,5 +55,23 @@ var Job = new Schema({
   status: String
 //  attempts: Number
 });
+
+Job.methods.setStatus = function(status, callback){
+  this.status = status;
+  var j = this;
+  this.save(function(err){
+    if(err){
+      j.emit('job_save_error');
+      if(callback) callback(err);
+    } else {
+      j.emit('job_saved');
+      if(callback) callback(null);
+    }
+  });
+};
+
+Job.methods.remove_listeners = function(){
+  this.removeAllListeners();
+};
 
 exports.Job = mongoose.model('Job', Job);

@@ -56,7 +56,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
     var receiver = results.receiver;
 
     if(!job_queues[receiver.name]){
-      job_queues[receiver.name] = new job_processor(receiver.concurrency, receiver.host, receiver.port);
+      job_queues[receiver.name] = new job_processor(receiver);
     }
 
     var path = _.detect(receiver.paths, function(path){
@@ -75,20 +75,20 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       host: receiver.host,
       port: receiver.port || config.default_receiver_port,
       timeout: path.timeout || config.default_receiver_timeout,
-      receiver: receiver,
-      status: "incomplete"
+      receiver: receiver
     });
 
-    job.save(function(err){
-      if(err){
-        res.end('Job failed to save');
-        console.log('Job failed to save: ' + job);
-      }else{
-        job_queues[receiver.name].push(job);
-        res.end('Job saved. Good job!');
-        console.log('Job saved. Good job!');
-      }
+    job.on('job_saved', function(){
+      res.end('Job saved. Good job!');
+      job.remove_listeners();
     });
+
+    job.on('job_save_error', function(){
+      res.end('Job failed to save');
+      job.remove_listeners();
+    });
+    
+    job_queues[receiver.name].push(job);
   });
 });
 
