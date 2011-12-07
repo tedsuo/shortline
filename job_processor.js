@@ -12,8 +12,8 @@ var JobProcessor = function(receiver){
   // Refill size should be half the max_queue size
   this.refill_size = receiver.concurrency * 5;
   this.receiver = receiver;
+
   this.state = "open";
-  console.log('state: open');
 
   // Node 0.6
   var httpAgent = new http.Agent();
@@ -28,6 +28,9 @@ var JobProcessor = function(receiver){
   };
 
   this.on('job_finished', this.handle_job_finished);
+
+  console.log('R '+this.receiver.name+': initializing');
+  this.initialize_queue();
 };
 
 util.inherits(JobProcessor, EventEmitter);
@@ -40,7 +43,7 @@ JobProcessor.prototype.push = function(job){
     } else {
       this.queue.push(job);
       if(this.max_queue == this.queue.length){
-        console.log('state switched to draining');
+        console.log('R '+this.receiver.name+': state switched to draining');
         this.state = "draining";
       }
     }
@@ -53,8 +56,8 @@ JobProcessor.prototype.push = function(job){
       this.push(job);
     });
   }
-  console.log('queue length: ', this.queue.length);
-  console.log('state: ', this.state);
+  console.log('R '+this.receiver.name+': queue length is '+this.queue.length);
+  console.log('R '+this.receiver.name+': state is '+ this.state);
 };
 
 JobProcessor.states = [
@@ -94,41 +97,54 @@ JobProcessor.prototype.process_queue = function(){
 };
 
 JobProcessor.prototype.initialize_queue = function(){
+  var jp = this;
+  var q = models.Job.find({
+    'receiver._id': jp.receiver._id
+  }).or([{status: "overflow"}, {status: "queued"}]).sort('created', 'ascending');
+  q.execFind(function(err, jobs){
+    _.each(jobs, function(job){
+      jp.push(job);
+    });
+  });
 };
 
 // Refill the queue from mongo, in the order the jobs were created
 JobProcessor.prototype.refill_queue = function(){
   var jp = this;
-  console.log('state switched to refilling');
+  console.log('R '+this.receiver.name+': state switched to refilling');
   this.state = "refilling";
   var q = models.Job.find({
     status: "overflow",
     'receiver._id': jp.receiver._id
   }).sort('created', 'ascending').limit(this.refill_size);
   q.execFind(function(err, jobs){
-    console.log("retreived " + jobs.length + " jobs from mongo");
+    console.log('R '+jp.receiver.name+': retreived ' + jobs.length + " jobs from mongo");
     var job_functions = [];
     _.each(jobs, function(job){
       job_functions[job_functions.length] = function(done){
         jp.queue.push(job);
-        job.status = "queued";
-        job.save(function(err){
-          if(err){
-            done(err);
-          } else {
-            done();
-          }
-        })
+        if(job.status != "queued"){
+          job.status = "queued";
+          job.save(function(err){
+            if(err){
+              done(err);
+            } else {
+              done();
+            }
+          });
+        } else {
+          done();
+        }
       };
     });
-    async.parallel(
+    async.series(
       job_functions,
       function(err){
         if(jobs.length < jp.refill_size){
-          console.log('state switched to open');
+          console.log('R '+jp.receiver.name+': state switched to open');
           jp.state = "open";
         } else {
-          console.log('state switched to draining');
+          console.log('R '+jp.receiver.name+': state switched to draining');
           jp.state = "draining";
         }
         jp.emit('refilling_finished');
@@ -142,15 +158,12 @@ JobProcessor.prototype.process_job = function(job){
   this.concurrent_connections++;
   var options = _.extend({path: '/'+job.path}, this.options);
   var timeout_task;
-  console.log('Processing Job id: '+ job._id);
+  console.log('R '+this.receiver.name+': J '+job._id+' > Processing');
 
   // Make a request to the endpoint
   var req = http.request(options, function(res){
-    res.on('data', function(chunk){
-      console.log('Body for '+job._id+': '+chunk);
-    });
     res.on('end', function(){
-      console.log('Response code for '+job._id+': '+res.statusCode);
+      console.log('R '+jp.receiver.name+': J '+job._id+' > Response Code: '+res.statusCode);
       clearTimeout(timeout_task);
       if(res.statusCode == 200){
         job.setStatus("complete");
@@ -167,14 +180,14 @@ JobProcessor.prototype.process_job = function(job){
   req.on('error', function(err){
     clearTimeout(timeout_task);
     job.setStatus("error");
-    console.log('Error: '+err.message);
+    console.log('R '+jp.receiver.name+': J '+job._id+' > Error: '+err.message);
     jp.emit('job_finished');
   });
   timeout_task = setTimeout(function(){
     req.removeAllListeners('error');
     req.on('error', function(){});
     job.setStatus("timeout");
-    console.log("Timeout!");
+    console.log('R '+jp.receiver.name+': J '+job._id+' > Timeout!');
     req.abort();
     jp.emit('job_finished');
   }, job.timeout);

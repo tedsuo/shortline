@@ -15,6 +15,12 @@ receiver.configure('development', function(){
 
 var job_queues = {};
 
+models.Receiver.find({}, function(err, receivers){
+  _.each(receivers, function(receiver){
+    job_queues[receiver.name] = new job_processor(receiver);
+  });
+});
+
 receiver.get('/', function(req, res){
   res.send("Welcome to JobBoard.  Please read the <a href='https://github.com/tedsuo/Job-Board'>documentation</a> to use.");
 });
@@ -38,9 +44,13 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       });
     },
     receiver: function(done){
-      models.Receiver.find_by_name(req.params.receiver_name,function(err,receiver){
-        done(null, receiver);
-      });
+      if(job_queues[req.params.receiver_name]){
+        done(null, job_queues[req.params.receiver_name].receiver);
+      } else {
+        models.Receiver.find_by_name(req.params.receiver_name,function(err,receiver){
+          done(null, receiver);
+        });
+      }
     }
   }, function(err, results){
     if(err){ res.end(err);
@@ -65,7 +75,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
 
     if(!path){
       res.end('No path by that name found.');
-      console.log("No path'" + req.params.path_name + "' found.");
+      console.log("No path '" + req.params.path_name + "' found.");
       return;
     }
 
