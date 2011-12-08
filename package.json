@@ -2,7 +2,7 @@
   "author": "tedsuo,Hainish,jackaperkins",
   "name": "job_board",
   "description": "Job Queueing done easy",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "repository": {
     "type": "git",
     "url": "git://github.com/tedsuo/Job-Board.git"
@@ -17,7 +17,7 @@
     "mongoose": ">=2.3.10",
     "optimist": ">=0.2.8",
     "colors": ">=0.5.1",
-    "mobettah": ">=0.1.0"
+    "mobettah": ">=0.1.1"
   },
   "main" : "job_board",
   "directories" : { 

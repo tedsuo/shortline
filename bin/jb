@@ -79,14 +79,22 @@ commands = {
         console.log("ERROR: Job Board could not start: " + error);
       }
       if(stdout.trim() == '0'){
-        var preexec = "";
-        if(argv['m']) process.env.NODE_ENV = argv.m;
-        var child = spawn(parent_dir() + "/node_modules/mobettah/service.js", [parent_dir() + "/job_board.js"]);
-        child.stdout.on('data', function(data){
-          if(data.toString().indexOf("listening") != -1){
-            console.log("Job Board process started");
-            process.exit();
+        exec('which mobettah | wc -l', function(error, stdout){
+          if(stdout.trim() == '0'){
+            var mobettah_cmd = parent_dir() + "/node_modules/mobettah/bin/mobettah";
+          } else {
+            var mobettah_cmd = "mobettah";
           }
+
+          var preexec = "";
+          if(argv['m']) process.env.NODE_ENV = argv.m;
+          var child = spawn(mobettah_cmd, ['-c', parent_dir() + '/mobettah_config.js', parent_dir() + "/job_board.js"]);
+          child.stdout.on('data', function(data){
+            if(data.toString().indexOf("listening") != -1){
+              console.log("Job Board process started");
+              process.exit();
+            }
+          });
         });
       } else {
         console.log("ERROR: An instance of Job Board is already running.");
