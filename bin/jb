@@ -23,13 +23,13 @@ function print_help(){
   console.log('stop');
   console.log('   * Stop the job_board daemon');
   console.log('');
-  console.log('add receiver <name> <host> [-c <concurrency>] [-p <port>] [-m <mode>]');
+  console.log('add receiver <name> <host> [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]');
   console.log('   * Add a receiver for the given host');
   console.log('');
   console.log('add path <receiver_name> <name> <url> [-t <timeout>] [-m <mode>]');
   console.log('   * Add an endpoint path for the given receiver.');
   console.log('');
-  console.log('update receiver <name> [-n <new_name>] [-h <host>] [-c <concurrency>] [-p <port>] [-m <mode>]');
+  console.log('update receiver <name> [-n <new_name>] [-h <host>] [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]');
   console.log('   * Update given receiver');
   console.log('');
   console.log('update path <receiver_name> <name> [-n <new_name>] [-u <url>] [-t <timeout>] [-m <mode>]');
@@ -138,6 +138,7 @@ commands = {
       _.each(docs, function(doc){
         console.log(("["+doc.name.blue+"]").bold);
         console.log("  Host:          "+doc.host);
+        if(doc.ip) console.log("  IP:            "+doc.ip);
         console.log("  Port:          "+doc.port);
         console.log("  Concurrency:   "+doc.concurrency);
         _.each(doc.paths, function(path){
@@ -170,6 +171,8 @@ commands = {
           concurrency: concurrency,
           port: port
         };
+
+        if(argv.i) options.ip = argv.i;
 
         var receiver = new models.Receiver(options);
         receiver.save(function(err){
@@ -224,7 +227,7 @@ commands = {
     switch(process.argv[3]){
       case "receiver":
         var name = process.argv[4];
-        if(!name || !(argv.n || argv.h || _.isNumber(argv.c) || _.isNumber(argv.p))){
+        if(!name || !(argv.n || argv.h || _.isNumber(argv.c) || _.isNumber(argv.p) || argv.i)){
           print_help();
           process.exit();
         }
@@ -237,6 +240,7 @@ commands = {
           if(argv.h) receiver.host = argv.h;
           if(argv.c) receiver.concurrency = Number(argv.c);
           if(argv.p) receiver.port = Number(argv.p);
+          if(argv.i) receiver.ip = argv.i;
           receiver.save(function(err){
             if(err){
               console.log('There has been an error updating the receiver.');

@@ -24,6 +24,7 @@ var Path = new Schema({
 var Receiver = new Schema({
   name: String,
   host: String,
+  ip: String,
   port: String,
   concurrency: String,
   paths: [Path]

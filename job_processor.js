@@ -21,11 +21,19 @@ var JobProcessor = function(receiver){
   //var httpAgent = http.getAgent(host, port);
   httpAgent.maxSockets = receiver.concurrency;
   this.options = {
-    host: receiver.host,
     agent: httpAgent,
     port: receiver.port,
     method: 'POST'
   };
+
+  if(receiver.ip){
+    this.options.host = receiver.ip;
+    this.options.headers = {
+      Host: receiver.host
+    };
+  } else {
+    this.options.host = receiver.host;
+  }
 
   this.on('job_finished', this.handle_job_finished);
 
