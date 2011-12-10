@@ -38,7 +38,7 @@ function print_help(){
   console.log('ls [-r <receiver_name>] [-m <mode>]');
   console.log('   * List receivers and paths');
   console.log('');
-  console.log('status');
+  console.log('status [-r <receiver_name>] [-m <mode>]');
   console.log('   * List current jobs');
   console.log('');
   console.log('remove receiver <name> [-m <mode>]');
@@ -373,6 +373,30 @@ commands = {
         print_help();
         process.exit();
     }
+  },
+
+  status:function(){
+    if(argv.r){
+      options.name = argv.r;
+      console.log("List of Current Jobs with Receiver: \""+argv.r+"\"");
+      var q = models.Job.find({
+        'receiver.name': argv.r
+      }).or([{status: "overflow"},{status: "queued"}]).sort('created', 'ascending');
+    } else {
+      console.log("List of Current Jobs");
+      var q = models.Job.find({}).or([{status: "overflow"},{status: "queued"}]).sort('created', 'ascending');
+    }
+
+    q.execFind(function(err, jobs){
+      if(err){
+        console.log(err);
+      } else {
+        _.each(jobs, function(job){
+          console.log("R ", job.receiver[0].name);
+        });
+      }
+      process.exit();
+    });
   },
   
   rewind:function(){}
