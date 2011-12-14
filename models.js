@@ -45,13 +45,14 @@ Receiver.statics.find_by_name = function(name, cb){
 };
 
 exports.Receiver = mongoose.model('Receiver', Receiver);
+var ObjectId = Schema.ObjectId;
 
 var Job = new Schema({
   path     : String,
   payload : String,
   host : String,
   port: String,
-  receiver: [Receiver],
+  receiver: ObjectId,
   timeout : Number,
   status: String
 //  attempts: Number

@@ -85,7 +85,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       host: receiver.host,
       port: receiver.port || config.default_receiver_port,
       timeout: path.timeout || config.default_receiver_timeout,
-      receiver: receiver
+      receiver: receiver._id
     });
 
     job.on('job_saved', function(){

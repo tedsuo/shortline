@@ -6,6 +6,8 @@ var config = require('../config');
 var _ = require('underscore');
 var fs = require('fs');
 var colors = require('colors');
+var async = require('async');
+var util = require('util');
 if(argv["m"]){
   process.env.NODE_ENV = argv["m"];
 }
@@ -376,6 +378,7 @@ commands = {
   },
 
   status:function(){
+    var receiver_name_mapping = {};
     if(argv.r){
       options.name = argv.r;
       console.log("List of Current Jobs with Receiver: \""+argv.r+"\"");
@@ -391,11 +394,34 @@ commands = {
       if(err){
         console.log(err);
       } else {
+        var receiver_lookups = {};
         _.each(jobs, function(job){
-          console.log("R ", job.receiver[0].name);
+          receiver_lookups[job.receiver] = function(done){
+            models.Receiver.findOne({'_id': job.receiver}, function(err, doc){
+              if(err){
+                done(err);
+              } else {
+                console.log(doc);
+                receiver_name_mapping[job.receiver] = doc.name;
+                done();
+              }
+            });
+          };
+        });
+        async.parallel(receiver_lookups, function(err){
+          var x = 0;
+          _.each(jobs, function(job){
+            x++;
+            console.log();
+            console.log("Job #" + x + ":");
+            console.log("   Receiver:  "+receiver_name_mapping[job.receiver]);
+            console.log("   Path:      "+job.path);
+            console.log("   Post Data: "+job.payload);
+            console.log("   Status:    "+job.status);
+          });
+          process.exit();
         });
       }
-      process.exit();
     });
   },
   
