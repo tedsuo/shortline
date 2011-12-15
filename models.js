@@ -1,19 +1,28 @@
 var mongoose = require('mongoose');
+var environment = require('./lib/environment')(process.env.NODE_ENV);
 var Schema = mongoose.Schema;
+var config = require('./config');
+var EventEmitter = require('events').EventEmitter;
 
-var mongo_db = null;
-switch(process.env.NODE_ENV){
-  case "test":
-    mongo_db = "mongodb://localhost/jobboard_test";
-    break;
-  case "production":
-    mongo_db = 'mongodb://localhost/jobboard_production';
-    break;
-  default:
-    mongo_db = "mongodb://localhost/jobboard_development";
-    break;
+exports.emitter = new EventEmitter();
+
+mongo_db = "mongodb://";
+if(config.db[environment].user && config.db[environment].password){
+  mongo_db += config.db[environment].user+":"+config.db[environment].password+"@";
 }
+var hosts_array = [];
+for(x in config.db[environment].hosts){
+  var host_string = config.db[environment].hosts[x].hostname;
+  host_string += config.db[environment].hosts[x].port ? ":"+config.db[environment].hosts[x].port : "";
+  hosts_array.push(host_string);
+}
+mongo_db += hosts_array.join(",")+"/"+config.db[environment].database;
+
 mongoose.connect(mongo_db);
+
+mongoose.connection.on('open', function(){
+  exports.emitter.emit('open');
+});
 
 var Path = new Schema({
   name: String,

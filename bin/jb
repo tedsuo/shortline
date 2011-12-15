@@ -11,7 +11,15 @@ var util = require('util');
 if(argv["m"]){
   process.env.NODE_ENV = argv["m"];
 }
-var models = require('../models.js');
+var environment = require('../lib/environment')(argv["m"]);
+if(config.db[environment].adapter == "mysql"){
+  var mysql = require('../mysql');
+} else {
+  var models = require('../models');
+  models.emitter.on('open', function(){
+    console.log('fadfadfad');
+  });
+}
 
 function print_help(){
   console.log('--------------------------');
@@ -70,7 +78,7 @@ function execute_command(commands){
     commands[command]();
   } else {
     print_help();
-    process.exit();
+    //process.exit();
   }
 }
 // jb start -p 3030 -c jb_conf
