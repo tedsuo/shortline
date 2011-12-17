@@ -11,13 +11,11 @@ var util = require('util');
 if(argv["m"]){
   process.env.NODE_ENV = argv["m"];
 }
-var environment = require('../lib/environment')(argv["m"]);
-if(config.db[environment].adapter == "mysql"){
-  var mysql = require('../mysql');
-} else {
-  var models = require('../models');
-  models.emitter.on('open', function(){
-    console.log('fadfadfad');
+var adapter = require('../adapter');
+
+function wait_for_db(callback){
+  adapter.emitter.on('open', function(){
+    callback();
   });
 }
 
@@ -60,8 +58,6 @@ function print_help(){
   console.log('remove all [-m <mode>]');
   console.log('   * Remove all data from database');
   console.log('');
-  console.log('rewind');
-  console.log('');
   console.log('help');
   console.log('   * Display this dialog');
   console.log('');
@@ -78,7 +74,7 @@ function execute_command(commands){
     commands[command]();
   } else {
     print_help();
-    //process.exit();
+    process.exit();
   }
 }
 // jb start -p 3030 -c jb_conf
@@ -132,33 +128,35 @@ commands = {
   },
 
   ls:function(){
-    var options = {};
-    if(argv.r){
-      options.name = argv.r;
-      console.log("List Receiver with name \""+argv.r+"\"");
-    } else {
-      console.log("List of Receivers");
-    }
-    console.log("");
-    models.Receiver.find(options, function(err, docs){
-      if(err){
-        console.log(err);
-        process.exit();
+    wait_for_db(function(){
+      var options = {};
+      if(argv.r){
+        options.name = argv.r;
+        console.log("List Receiver with name \""+argv.r+"\"");
+      } else {
+        console.log("List of Receivers");
       }
-      _.each(docs, function(doc){
-        console.log(("["+doc.name.blue+"]").bold);
-        console.log("  Host:          "+doc.host);
-        if(doc.ip) console.log("  IP:            "+doc.ip);
-        console.log("  Port:          "+doc.port);
-        console.log("  Concurrency:   "+doc.concurrency);
-        _.each(doc.paths, function(path){
-          console.log("  →  Path Name:  "+path.name);
-          console.log("     Timeout:    "+path.timeout);
-          console.log("     URL:        "+path.url);
+      console.log("");
+      adapter.find_receiver(options, function(err, docs){
+        if(err){
+          console.log(err);
+          process.exit();
+        }
+        _.each(docs, function(doc){
+          console.log(("["+doc.name.blue+"]").bold);
+          console.log("  Host:          "+doc.host);
+          if(doc.ip) console.log("  IP:            "+doc.ip);
+          console.log("  Port:          "+doc.port);
+          console.log("  Concurrency:   "+doc.concurrency);
+          _.each(doc.paths, function(path){
+            console.log("  →  Path Name:  "+path.name);
+            console.log("     Timeout:    "+path.timeout);
+            console.log("     URL:        "+path.url);
+          })
+          console.log("");
         })
-        console.log("");
-      })
-      process.exit();
+        process.exit();
+      });
     });
   },
   
@@ -175,55 +173,51 @@ commands = {
           process.exit();
         }
 
-        var options = {
-          name: name,
-          host: host,
-          concurrency: concurrency,
-          port: port
-        };
+        wait_for_db(function(){
+          var options = {
+            name: name,
+            host: host,
+            concurrency: concurrency,
+            port: port
+          };
 
-        if(argv.i) options.ip = argv.i;
-
-        var receiver = new models.Receiver(options);
-        receiver.save(function(err){
-          if(err){
-            console.log('There has been an error saving this receiver.');
-            process.exit();
-          } else {
-            console.log('You have saved this receiver.');
-            console.log(options);
-            process.exit();
-          }
+          if(argv.i) options.ip = argv.i;
+          
+          adapter.add_receiver(options, function(err){
+            if(err){
+              console.log('There has been an error saving this receiver.');
+              process.exit();
+            } else {
+              console.log('You have saved this receiver.');
+              console.log(options);
+              process.exit();
+            }
+          });
         });
         break;
       case "path":
         var o = {
-          receiver_name: process.argv[4],
           name: process.argv[5],
           url: process.argv[6],
           timeout: Number(argv.t) || config.default_receiver_timeout
         };
+        var receiver_name = process.argv[4];
 
-        if(!o.receiver_name || !o.name || !o.url || !_.isNumber(o.timeout)){
+        if(!receiver_name || !o.name || !o.url || !_.isNumber(o.timeout)){
           print_help();
           process.exit();
-          return;
         }
-
-        models.Receiver.find_by_name(o.receiver_name, function(err, receiver){
-          if(err){
-            console.log('There has been an error finding the record to add paths to');
-            process.exit();
-          }
-          receiver.paths.push({name: o.name, url: o.url, timeout: o.timeout});
-          receiver.save(function(err){
+        
+        wait_for_db(function(){
+          adapter.add_path(receiver_name, o, function(err){
             if(err){
-              console.log('There has been an error saving.');
+              console.log('There has been an error saving this path.');
+              process.exit();
+            } else {
+              console.log('You have saved this path');
+              console.log(o);
               process.exit();
             }
-            console.log('You have saved this path.');
-            console.log(o);
-            process.exit();
           });
         });
         break;
@@ -241,17 +235,16 @@ commands = {
           print_help();
           process.exit();
         }
-        models.Receiver.find_by_name(name, function(err, receiver){
-          if(err){
-            console.log('There has been an error finding the receiver to update.');
-            process.exit();
-          }
-          if(argv.n) receiver.name = argv.n;
-          if(argv.h) receiver.host = argv.h;
-          if(argv.c) receiver.concurrency = Number(argv.c);
-          if(argv.p) receiver.port = Number(argv.p);
-          if(argv.i) receiver.ip = argv.i;
-          receiver.save(function(err){
+
+        wait_for_db(function(){
+          var options = {};
+          if(argv.n) options.name = argv.n;
+          if(argv.h) options.host = argv.h;
+          if(argv.c) options.concurrency = Number(argv.c);
+          if(argv.p) options.port = Number(argv.p);
+          if(argv.i) options.ip = argv.i;
+
+          adapter.update_receiver(name, options, function(err){
             if(err){
               console.log('There has been an error updating the receiver.');
               process.exit();
@@ -268,22 +261,13 @@ commands = {
           print_help();
           process.exit();
         }
-        models.Receiver.find_by_name(receiver_name, function(err, receiver){
-          if(err){
-            console.log('There has been an error finding the receiver for the path to update.');
-            process.exit();
-          }
-          var pathIndex = _.indexOf(receiver.paths, _.detect(receiver.paths, function(path){
-            return path.name == name;
-          }));
-          if(pathIndex == -1){
-            console.log('There has been an error finding the path to update.');
-            process.exit();
-          }
-          if(argv.n) receiver.paths[pathIndex].name = argv.n;
-          if(argv.u) receiver.paths[pathIndex].url = argv.u;
-          if(argv.t) receiver.paths[pathIndex].timeout = Number(argv.t);
-          receiver.save(function(err){
+        wait_for_db(function(){
+          var options = {};
+          if(argv.n) options.name = argv.n;
+          if(argv.u) options.url = argv.u;
+          if(argv.t) options.timeout = Number(argv.t);
+         
+          adapter.update_path(receiver_name, name, options, function(err){
             if(err){
               console.log('There has been an error updating the path.');
               process.exit();
@@ -307,17 +291,13 @@ commands = {
           print_help();
           process.exit();
         }
-        models.Receiver.find_by_name(name, function(err, receiver){
-          if(err){
-            console.log('There has been an error finding the receiver to remove.');
-            process.exit();
-          }
-          receiver.remove(function(err){
+        wait_for_db(function(err){
+          adapter.remove_receiver(name, function(err){
             if(err){
-              console.log(err);
-            } else {
-              console.log('You have removed this receiver.');
+              console.log('There has been an error removing the receiver.');
+              process.exit();
             }
+            console.log('You have removed this receiver.');
             process.exit();
           });
         });
@@ -329,20 +309,8 @@ commands = {
           print_help();
           process.exit();
         }
-        models.Receiver.find_by_name(receiver_name, function(err, receiver){
-          if(err){
-            console.log('There has been an error finding the receiver for the path to remove.');
-            process.exit();
-          }
-          var pathIndex = _.indexOf(receiver.paths, _.detect(receiver.paths, function(path){
-            return path.name == name;
-          }));
-          if(pathIndex == -1){
-            console.log('There has been an error finding the path to remove.');
-            process.exit();
-          }
-          receiver.paths[pathIndex].remove();
-          receiver.save(function(err){
+        wait_for_db(function(){
+          adapter.remove_path(receiver_name, name, function(err){
             if(err){
               console.log('There has been an error removing the path.');
               process.exit();
@@ -353,32 +321,17 @@ commands = {
         });
         break;
       case "all":
-        models.Receiver.collection.conn.db.dropDatabase(function(err){
-          if(err){
-            console.log(err);
-          } else {
+        wait_for_db(function(){
+          adapter.remove_all(function(err){
+            if(err){
+              console.log('There has been an error removing all records.');
+              process.exit();
+            }
             console.log('All records dropped from database.');
-          }
-          process.exit();
+            process.exit();
+          });
         });
         break;
-        /*
-        async.parallel([
-          function(done){
-            models.Receiver.collection.drop(function(err){
-              if(err) done(err);
-              done();
-            });
-          }
-        ], function(err, results){
-          if(err){
-            console.log(err);
-          } else {
-            console.log('All records dropped from database.');
-          }
-          process.exit();
-        });
-        */
       default:
         print_help();
         process.exit();
@@ -431,9 +384,7 @@ commands = {
         });
       }
     });
-  },
-  
-  rewind:function(){}
+  }
 }
 
 execute_command(commands);

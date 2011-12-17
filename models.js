@@ -34,8 +34,8 @@ var Receiver = new Schema({
   name: String,
   host: String,
   ip: String,
-  port: String,
-  concurrency: String,
+  port: Number,
+  concurrency: Number,
   paths: [Path]
 });
 
@@ -60,11 +60,10 @@ var Job = new Schema({
   path     : String,
   payload : String,
   host : String,
-  port: String,
+  port: Number,
   receiver: ObjectId,
   timeout : Number,
   status: String
-//  attempts: Number
 });
 
 Job.methods.setStatus = function(status, callback){
