@@ -264,6 +264,78 @@ exports.remove_all = function(callback){
   });
 };
 
+exports.find_jobs = function(receiver_name, callback){
+  var jobs_query = server.query().select('*').from('jobs');
+  if(receiver_name){
+    exports.find_receiver({name: receiver_name}, function(err, rows){
+      if(err){
+        callback(err);
+      } else {
+        var job_find_functions = [];
+        _.each(rows, function(row){
+          job_find_functions.push(function(done){
+            jobs_query.where('receiver_id = ?', [row.id]).order({id: true}).execute(function(err, job_rows){
+              _.each(job_rows, function(job_row){
+                job_row.receiver_name = row.name;
+              }); 
+              if(err){
+                done(err);
+              } else {
+                done(null, job_rows);
+              }
+            });
+          });  
+        });
+        async.parallel(job_find_functions, function(err, results){
+          if(err){
+            callback(err);
+          } else {
+            callback(null, _.union.apply(this, results));
+          }
+        });
+      }
+    });
+  } else {
+    jobs_query.order({id: true}).execute(function(err, rows){
+      if(err){
+        callback(err);
+      } else {
+        var receiver_lookup_functions = {};
+        var receiver_mapping = {};
+        _.each(rows, function(row){
+          receiver_lookup_functions[row.receiver_id] = function(done){
+            server.query().
+            select('name').
+            from('receivers').
+            where('id = ?', [row.receiver_id]).
+            execute(function(err, receiver_rows){
+              if(err){
+                done(err);
+              }
+              if(receiver_rows.length == 1){
+                receiver_mapping[row.receiver_id] = receiver_rows[0].name;
+              } else {
+                receiver_mapping[row.receiver_id] = row.receiver_id;
+              }
+              done();
+            });
+          };
+        });
+        async.parallel(receiver_lookup_functions, function(err){
+          if(err){
+            callback(err);
+          } else {
+            _.each(rows, function(row){
+              row.receiver_name = receiver_mapping[row.receiver_id];
+            });
+            callback(null, rows);
+          }
+        })
+      }
+    });
+  }
+}
+
 new mysql.Database(config.db[environment]).on('error', function(err){
   console.log('Error:' + err);
 }).connect(function(error){

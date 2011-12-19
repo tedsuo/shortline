@@ -1,4 +1,5 @@
 var config = require('./config');
+var async = require('async');
 var _ = require('underscore');
 var EventEmitter = require('events').EventEmitter;
 
@@ -18,7 +19,8 @@ if(config.db[environment].adapter == "mysql"){
     'update_path',
     'remove_receiver',
     'remove_path',
-    'remove_all'
+    'remove_all',
+    'find_jobs'
   ];
   _.each(mysql_functions, function(mysql_function){
       exports[mysql_function] = mysql[mysql_function];
@@ -152,4 +154,45 @@ if(config.db[environment].adapter == "mysql"){
       }
     });
   };
+  exports.find_jobs = function(receiver_name, callback){
+      var receiver_name_mapping = {};
+      if(receiver_name){
+        var q = models.Job.find({
+          'receiver.name': receiver_name
+        }).or([{status: "overflow"},{status: "queued"}]).sort('created', 'ascending');
+      } else {
+        var q = models.Job.find({}).or([{status: "overflow"},{status: "queued"}]).sort('created', 'ascending');
+      }
+
+      q.execFind(function(err, jobs){
+        if(err){
+          callback(err);
+        } else {
+          var receiver_lookups = {};
+          _.each(jobs, function(job){
+            receiver_lookups[job.receiver_id] = function(done){
+              models.Receiver.findOne({'_id': job.receiver_id}, function(err, doc){
+                if(err){
+                  done(err);
+                } else {
+                  if(doc){
+                    receiver_name_mapping[job.receiver_id] = doc.name;
+                  } else {
+                    receiver_name_mapping[job.receiver_id] = job.receiver_id_id;
+                  }
+                  done();
+                }
+              });
+            };
+          });
+          async.parallel(receiver_lookups, function(err){
+            var x = 0;
+            _.each(jobs, function(job){
+              job.receiver_name = receiver_name_mapping[job.receiver_id];
+            });
+            callback(null, jobs);
+          });
+        }
+      });
+  }
 }

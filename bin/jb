@@ -339,50 +339,31 @@ commands = {
   },
 
   status:function(){
-    var receiver_name_mapping = {};
-    if(argv.r){
-      options.name = argv.r;
-      console.log("List of Current Jobs with Receiver: \""+argv.r+"\"");
-      var q = models.Job.find({
-        'receiver.name': argv.r
-      }).or([{status: "overflow"},{status: "queued"}]).sort('created', 'ascending');
-    } else {
-      console.log("List of Current Jobs");
-      var q = models.Job.find({}).or([{status: "overflow"},{status: "queued"}]).sort('created', 'ascending');
-    }
-
-    q.execFind(function(err, jobs){
-      if(err){
-        console.log(err);
+    wait_for_db(function(){
+      var receiver_name = null;
+      if(argv.r){
+        receiver_name = argv.r;
+        console.log("List of Current Jobs with Receiver: \""+argv.r+"\"");
       } else {
-        var receiver_lookups = {};
-        _.each(jobs, function(job){
-          receiver_lookups[job.receiver] = function(done){
-            models.Receiver.findOne({'_id': job.receiver}, function(err, doc){
-              if(err){
-                done(err);
-              } else {
-                console.log(doc);
-                receiver_name_mapping[job.receiver] = doc.name;
-                done();
-              }
-            });
-          };
-        });
-        async.parallel(receiver_lookups, function(err){
-          var x = 0;
-          _.each(jobs, function(job){
-            x++;
-            console.log();
-            console.log("Job #" + x + ":");
-            console.log("   Receiver:  "+receiver_name_mapping[job.receiver]);
-            console.log("   Path:      "+job.path);
-            console.log("   Post Data: "+job.payload);
-            console.log("   Status:    "+job.status);
-          });
-          process.exit();
-        });
+        console.log("List of Current Jobs");
       }
+      adapter.find_jobs(receiver_name, function(err, jobs){
+        if(err){
+          console.log('There has been an error receiving the list of jobs.');
+          process.exit();
+        }
+        var x = 0;
+        _.each(jobs, function(job){
+          x++;
+          console.log();
+          console.log("Job #" + x + ":");
+          console.log("   Receiver:  "+job.receiver_name);
+          console.log("   Path:      "+job.path);
+          console.log("   Post Data: "+job.payload);
+          console.log("   Status:    "+job.status);
+        });
+        process.exit();
+      });
     });
   }
 }

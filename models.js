@@ -61,7 +61,7 @@ var Job = new Schema({
   payload : String,
   host : String,
   port: Number,
-  receiver: ObjectId,
+  receiver_id: ObjectId,
   timeout : Number,
   status: String
 });

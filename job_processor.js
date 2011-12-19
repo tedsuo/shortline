@@ -107,7 +107,7 @@ JobProcessor.prototype.process_queue = function(){
 JobProcessor.prototype.initialize_queue = function(){
   var jp = this;
   var q = models.Job.find({
-    'receiver': jp.receiver._id
+    'receiver_id': jp.receiver._id
   }).or([{status: "overflow"}, {status: "queued"}]).sort('created', 'ascending');
   q.execFind(function(err, jobs){
     _.each(jobs, function(job){
@@ -123,7 +123,7 @@ JobProcessor.prototype.refill_queue = function(){
   this.state = "refilling";
   var q = models.Job.find({
     status: "overflow",
-    'receiver': jp.receiver._id
+    'receiver_id': jp.receiver._id
   }).sort('created', 'ascending').limit(this.refill_size);
   q.execFind(function(err, jobs){
     console.log('R '+jp.receiver.name+': retreived ' + jobs.length + " jobs from mongo");
