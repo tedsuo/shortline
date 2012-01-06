@@ -32,9 +32,10 @@ function build_insert_args(options){
 
 exports.emitter = new EventEmitter();
 
-exports.find_receiver = function(options, callback){
+exports.find_receiver = function(options, callback, limit){
   var receiver_query = server.query().select('*').from('receivers');
   receiver_query = add_where_args(options, receiver_query);
+  if(limit != null) receiver_query = receiver_query.limit(1);
   receiver_query.execute(function(error, rows){
     if(error){
       callback(error);
@@ -65,6 +66,10 @@ exports.find_receiver = function(options, callback){
       });
     }
   });
+};
+
+exports.find_receiver_by_name(receiver_name, callback){
+  exports.find_receiver({name: receiver_name}, callback, 1);
 };
 
 exports.add_receiver = function(options, callback){

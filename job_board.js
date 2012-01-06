@@ -2,6 +2,7 @@
 var express = require('express');
 var _ = require('underscore');
 var models = require('./models');
+var adapter = require('./adapter');
 var async = require('async');
 var config = require('./config');
 var job_processor = require('./job_processor');
@@ -15,7 +16,7 @@ receiver.configure('development', function(){
 
 var job_queues = {};
 
-models.Receiver.find({}, function(err, receivers){
+adapter.find_receiver(function(error, receivers){
   _.each(receivers, function(receiver){
     job_queues[receiver.name] = new job_processor(receiver);
   });
@@ -47,7 +48,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       if(job_queues[req.params.receiver_name]){
         done(null, job_queues[req.params.receiver_name].receiver);
       } else {
-        models.Receiver.find_by_name(req.params.receiver_name,function(err,receiver){
+        adapter.find_receiver_by_name(req.params.receiver_name, function(err, receiver){
           done(null, receiver);
         });
       }

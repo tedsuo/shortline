@@ -20,7 +20,8 @@ if(config.db[environment].adapter == "mysql"){
     'remove_receiver',
     'remove_path',
     'remove_all',
-    'find_jobs'
+    'find_jobs',
+    'add_job'
   ];
   _.each(mysql_functions, function(mysql_function){
       exports[mysql_function] = mysql[mysql_function];
@@ -31,23 +32,14 @@ if(config.db[environment].adapter == "mysql"){
     exports.emitter.emit('open');
   });
   exports.find_receiver = function(options, callback){
-    models.Receiver.find(options, function(err, docs){
-      if(err){
-        callback(err);
-      } else {
-        callback(null, docs);
-      }
-    });
+    models.Receiver.find(options, callback);
   };
+  exports.find_receiver_by_name = function(receiver_name, callback){
+    models.Receiver.find_by_name(receiver_name, callback);
+  }
   exports.add_receiver = function(options, callback){
     var receiver = new models.Receiver(options);
-    receiver.save(function(err){
-      if(err){
-        callback(err);
-      } else {
-        callback();
-      }
-    });
+    receiver.save(callback);
   };
   exports.add_path = function(receiver_name, options, callback){
     models.Receiver.find_by_name(receiver_name, function(err, receiver){
@@ -55,13 +47,7 @@ if(config.db[environment].adapter == "mysql"){
         callback(err);
       } else {
         receiver.paths.push(options);
-        receiver.save(function(err){
-          if(err){
-            callback(err);
-          } else {
-            callback();
-          }
-        });
+        receiver.save(callback);
       }
     });
   };
@@ -73,13 +59,7 @@ if(config.db[environment].adapter == "mysql"){
         for(x in options){
           receiver[x] = options[x];
         }
-        receiver.save(function(err){
-          if(err){
-            callback(err);
-          } else {
-            callback();
-          }
-        });
+        receiver.save(callback);
       }
     });
   };
@@ -97,13 +77,7 @@ if(config.db[environment].adapter == "mysql"){
         for(x in options){
           receiver.paths[pathIndex][x] = options[x];
         }
-        receiver.save(function(err){
-          if(err){
-            callback(err);
-          } else {
-            callback();
-          }
-        });
+        receiver.save(callback);
       }
     });
   };
@@ -112,13 +86,7 @@ if(config.db[environment].adapter == "mysql"){
       if(err){
         callback(err);
       } else {
-        receiver.remove(function(err){
-          if(err){
-            callback(err);
-          } else {
-            callback();
-          }
-        });
+        receiver.remove(callback);
       }
     });
   };
@@ -134,25 +102,13 @@ if(config.db[environment].adapter == "mysql"){
           callback(err);
         } else {
           receiver.paths[pathIndex].remove();
-          receiver.save(function(err){
-            if(err){
-              callback(err);
-            } else {
-              callback();
-            }
-          });
+          receiver.save(callback);
         }
       }
     });
   };
   exports.remove_all = function(callback){
-    models.Receiver.collection.conn.db.dropDatabase(function(err){
-      if(err){
-        callback(err);
-      } else {
-        callback();
-      }
-    });
+    models.Receiver.collection.conn.db.dropDatabase(callback);
   };
   exports.find_jobs = function(receiver_name, callback){
       var receiver_name_mapping = {};
@@ -194,5 +150,8 @@ if(config.db[environment].adapter == "mysql"){
           });
         }
       });
-  }
+  };
+  exports.add_job = function(options, callback){
+    
+  };
 }
