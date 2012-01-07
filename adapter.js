@@ -5,6 +5,16 @@ var EventEmitter = require('events').EventEmitter;
 
 exports.emitter = new EventEmitter();
 
+function parse_statuses(statuses){
+    var status_arr = [];
+    if(statuses){
+      _.each(options.statuses, function(status){
+        status_arr.push({status: status});
+      });
+    }
+    return status_arr;
+}
+
 var environment = require('./lib/environment')(process.env.NODE_ENV);
 if(config.db[environment].adapter == "mysql"){
   var mysql = require('./mysql');
@@ -13,6 +23,7 @@ if(config.db[environment].adapter == "mysql"){
   });
   var mysql_functions = [
     'find_receiver',
+    'find_receiver_by_name',
     'add_receiver',
     'add_path',
     'update_receiver',
@@ -20,8 +31,9 @@ if(config.db[environment].adapter == "mysql"){
     'remove_receiver',
     'remove_path',
     'remove_all',
-    'find_jobs',
-    'add_job'
+    'find_jobs_by_receiver_id',
+    'find_jobs_by_receiver_name',
+    'create_job'
   ];
   _.each(mysql_functions, function(mysql_function){
       exports[mysql_function] = mysql[mysql_function];
@@ -110,16 +122,43 @@ if(config.db[environment].adapter == "mysql"){
   exports.remove_all = function(callback){
     models.Receiver.collection.conn.db.dropDatabase(callback);
   };
-  exports.find_jobs = function(receiver_name, callback){
-      var receiver_name_mapping = {};
-      if(receiver_name){
-        var q = models.Job.find({
-          'receiver.name': receiver_name
-        }).or([{status: "overflow"},{status: "queued"}]).sort('created', 'ascending');
+  exports.find_jobs_by_receiver_id = function(receiver_id, options, callback){
+    var status_arr = parse_statuses(options.statuses);
+    var q = models.Job.find({
+      'receiver_id': receiver_id
+    }).or(status_arr).sort('created', 'ascending');
+    if(options.limit) q = q.limit(options.limit);
+    q.execFind(function(err, jobs){
+      if(err){
+        callback(err);
       } else {
-        var q = models.Job.find({}).or([{status: "overflow"},{status: "queued"}]).sort('created', 'ascending');
+        callback(null, jobs);
       }
-
+    });
+  };
+  exports.find_jobs_by_receiver_name = function(receiver_name, options, callback){
+    if(receiver_name){
+      exports.find_receiver_by_name(receiver_name, function(err, receiver){
+        if(err){
+          callback(err);
+        } else {
+          exports.find_jobs_by_id(receiver._id, options, function(err, jobs){
+            if(err){
+              callback(err);
+            } else {
+              _.each(jobs, function(job){
+                job.receiver_name = receiver_name;
+              });
+              callback(null, jobs);
+            }
+          });
+        }
+      });
+    } else {
+      var receiver_name_mapping = {};
+      var status_arr = parse_statuses(options.statuses);
+      var q = models.Job.find({}).or(status_arr).sort('created', 'ascending');
+      if(options.limit) q = q.limit(options.limit);
       q.execFind(function(err, jobs){
         if(err){
           callback(err);
@@ -129,7 +168,7 @@ if(config.db[environment].adapter == "mysql"){
             receiver_lookups[job.receiver_id] = function(done){
               models.Receiver.findOne({'_id': job.receiver_id}, function(err, doc){
                 if(err){
-                  done(err);
+                  callback(err);
                 } else {
                   if(doc){
                     receiver_name_mapping[job.receiver_id] = doc.name;
@@ -150,8 +189,9 @@ if(config.db[environment].adapter == "mysql"){
           });
         }
       });
+    }
   };
-  exports.add_job = function(options, callback){
-    
+  exports.create_job = function(job, callback){
+    return new models.Job(options);
   };
 }

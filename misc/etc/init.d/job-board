@@ -1,0 +1,48 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          job-board
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the job board server
+# Description:       starts job board using start-stop-daemon
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=jb
+NAME=job-board
+DESC=job-board
+
+#test -x $DAEMON || exit 0
+
+# Include job-board defaults if available
+if [ -f /etc/default/job-board ] ; then
+  . /etc/default/job-board
+fi
+
+set -e
+
+case "$1" in
+  start)
+    echo -n "Starting $DESC: "
+    $DAEMON start
+    ;;
+  stop)
+    echo -n "Stopping $DESC: "
+    $DAEMON stop
+    ;;
+  restart|force-reload)
+    echo -n "Restarting $DESC: "
+    $DAEMON stop
+    $DAEMON start
+    ;;
+  *)
+    N=/etc/init.d/$NAME
+    echo "Usage: $N {start|stop|restart}" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

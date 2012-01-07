@@ -1,12 +1,4 @@
 THE PLAN
-Start by defining the cli
-test the cli
-jb start
-jb stop
-jb restart
 
-init.d
-node daemonize
-define modules
-
-Gentoo
+Install script (mysql, mongo)
+Improve documentation

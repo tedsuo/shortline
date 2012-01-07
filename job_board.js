@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 var express = require('express');
 var _ = require('underscore');
-var models = require('./models');
 var adapter = require('./adapter');
 var async = require('async');
 var config = require('./config');
 var job_processor = require('./job_processor');
+var wait_for_db = require('./lib/wait_for_db')(adapter);
 
 var receiver = express.createServer();
 
@@ -15,10 +15,11 @@ receiver.configure('development', function(){
 });
 
 var job_queues = {};
-
-adapter.find_receiver(function(error, receivers){
-  _.each(receivers, function(receiver){
-    job_queues[receiver.name] = new job_processor(receiver);
+wait_for_db(function(){
+  adapter.find_receiver({}, function(error, receivers){
+    _.each(receivers, function(receiver){
+      job_queues[receiver.name] = new job_processor(receiver);
+    });
   });
 });
 
@@ -54,11 +55,12 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       }
     }
   }, function(err, results){
-    if(err){ res.end(err);
+    if(err){ 
+      res.end(err);
       return;
     }
 
-    if(!results.receiver){
+    if(results.receiver.length == 0){
       res.end("No receiver by that name found.");
       console.log("No receiver '" + req.params.receiver_name + "' found.");
       return;
@@ -73,36 +75,37 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
     var path = _.detect(receiver.paths, function(path){
       return path.name == req.params.path_name; 
     });
-
+    
     if(!path){
       res.end('No path by that name found.');
       console.log("No path '" + req.params.path_name + "' found.");
       return;
     }
 
-    var job = new models.Job({
+    var job = adapter.create_job({
       path: path.url,
       payload: req_json_string,
       host: receiver.host,
       port: receiver.port || config.default_receiver_port,
       timeout: path.timeout || config.default_receiver_timeout,
-      receiver: receiver._id
+      receiver_id: receiver._id
     });
 
     job.on('job_saved', function(){
       res.end('Job saved. Good job!');
-      job.remove_listeners();
+      job.removeAllListeners();
     });
 
     job.on('job_save_error', function(){
       res.end('Job failed to save');
-      job.remove_listeners();
+      job.removeAllListeners();
     });
     
     job_queues[receiver.name].push(job);
   });
 });
 
-receiver.listen(config.port);
-
-console.log("Job Board started listening on TCP/" + config.port);
+wait_for_db(function(){
+  receiver.listen(config.port);
+  console.log("Job Board started listening on TCP/" + config.port);
+});

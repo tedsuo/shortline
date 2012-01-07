@@ -80,8 +80,4 @@ Job.methods.setStatus = function(status, callback){
   });
 };
 
-Job.methods.remove_listeners = function(){
-  this.removeAllListeners();
-};
-
 exports.Job = mongoose.model('Job', Job);

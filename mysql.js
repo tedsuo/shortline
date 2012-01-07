@@ -3,6 +3,7 @@ var environment = require('./lib/environment')(process.env.NODE_ENV);
 var config = require('./config');
 var async = require('async');
 var _ = require('underscore');
+var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var server;
 
@@ -30,6 +31,52 @@ function build_insert_args(options){
   return {cols: cols_arr, vals: vals_arr};
 }
 
+function Job(options){
+  this.path = options.path;
+  this.payload = options.payload;
+  this.host = options.host;
+  this.port = options.port;
+  this.timeout = options.timeout;
+  this.receiver_id = options.receiver_id;
+  this._id = options._id;
+}
+
+util.inherits(Job, EventEmitter);
+
+Job.prototype.setStatus = function(status, callback){
+  var j = this;
+  if(!this._id){
+    server.query().insert(
+      'jobs',
+      ['path', 'payload', 'host', 'port', 'timeout', 'receiver_id', 'status'],
+      [this.path, this.payload, this.host, this.port, this.timeout, this.receiver_id, status]
+    ).execute(function(error, result){
+      if(error){
+        j.emit('job_save_error');
+        if(callback) callback(error);
+      } else {
+        j._id = result.id;
+        j.status = status;
+        j.emit('job_saved');
+        if(callback) callback(null, result);
+      }
+    });
+  } else {
+    server.query().update('jobs').set({
+      'status': status
+    }).where('_id = ?', [ this._id ]).execute(function(error, results){
+      if(error){
+        j.emit('job_save_error');
+        if(callback) callback(error);
+      } else {
+        j.status = status;
+        j.emit('job_saved');
+        if(callback) callback(null, result);
+      }
+    });
+  }
+}
+
 exports.emitter = new EventEmitter();
 
 exports.find_receiver = function(options, callback, limit){
@@ -46,7 +93,7 @@ exports.find_receiver = function(options, callback, limit){
           server.query().
           select('*').
           from('paths').
-          where('receiver_id = ?', [row.id]).
+          where('receiver_id = ?', [row._id]).
           execute(function(error, rows){
             if(error){
               done(error)
@@ -68,7 +115,7 @@ exports.find_receiver = function(options, callback, limit){
   });
 };
 
-exports.find_receiver_by_name(receiver_name, callback){
+exports.find_receiver_by_name = function(receiver_name, callback){
   exports.find_receiver({name: receiver_name}, callback, 1);
 };
 
@@ -97,7 +144,7 @@ exports.add_path = function(receiver_name, options, callback){
         inserts.push(function(done){
           var insert_args = build_insert_args(options);
           insert_args.cols.push('receiver_id');
-          insert_args.vals.push(row.id);
+          insert_args.vals.push(row._id);
           server.query().insert(
             'paths',
             insert_args.cols,
@@ -151,7 +198,7 @@ exports.update_path = function(receiver_name, path_name, options, callback){
           ).set(
             options
           ).where(
-            'name = ? AND receiver_id = ?', [path_name, row.id]
+            'name = ? AND receiver_id = ?', [path_name, row._id]
           ).execute(function(error, result){
             if(error){
               done(error)
@@ -182,14 +229,14 @@ exports.remove_receiver = function(receiver_name, callback){
         removes.push(function(done){
           server.query().delete().
           from('receivers').
-          where('id = ?', [row.id]).
+          where('_id = ?', [row._id]).
           execute(function(error, result){
             if(error){
               done(error);
             } else {
               server.query().delete().
               from('paths').
-              where('receiver_id = ?', [row.id]).
+              where('receiver_id = ?', [row._id]).
               execute(function(error, result){
                 if(error){
                   done(error);
@@ -223,7 +270,7 @@ exports.remove_path = function(receiver_name, path_name, callback){
           server.query().delete().
           from('paths').
           where(
-            'name = ? AND receiver_id = ?', [path_name, row.id]
+            'name = ? AND receiver_id = ?', [path_name, row._id]
           ).execute(function(error, result){
             if(error){
               done(error)
@@ -269,8 +316,51 @@ exports.remove_all = function(callback){
   });
 };
 
-exports.find_jobs = function(receiver_name, callback){
-  var jobs_query = server.query().select('*').from('jobs');
+function parse_statuses(statuses){
+  var where_obj = {
+    text: null,
+    vars: []
+  }
+  var where_text_arr = [];
+  if(statuses){
+    _.each(statuses, function(status){
+      where_obj.vars.push(status);
+      where_text_arr.push('status = ?');
+    });
+    where_obj.text = where_text_arr.join(" OR ");
+  }
+  return where_obj;
+}
+
+exports.find_jobs_by_receiver_id = function(receiver_id, options, callback){
+  var where_text = 'receiver_id = ?';
+  var where_vars = [receiver_id];
+  var where_obj = parse_statuses(options.statuses);
+  if(where_obj.vars.length > 0){
+    where_text += " AND ("+where_obj.text+")";
+    where_vars = _.union(where_vars, where_obj.vars);
+  }
+  var q = server.query().select('*').from('jobs').where(where_text, where_vars).order({_id: true});
+  if(options.limit) q = q.limit(options.limit);
+  q.execute(function(err, job_rows){
+    if(options.receiver_name){
+      _.each(job_rows, function(job_row){
+        job_row.receiver_name = options.receiver_name;
+      }); 
+    }
+    if(err){
+      callback(err);
+    } else {
+      var job_list = [];
+      _.each(job_rows, function(job_row){
+        job_list.push(new Job(job_row));
+      });
+      callback(null, job_list);
+    }
+  });
+}
+
+exports.find_jobs_by_receiver_name = function(receiver_name, options, callback){
   if(receiver_name){
     exports.find_receiver({name: receiver_name}, function(err, rows){
       if(err){
@@ -279,16 +369,8 @@ exports.find_jobs = function(receiver_name, callback){
         var job_find_functions = [];
         _.each(rows, function(row){
           job_find_functions.push(function(done){
-            jobs_query.where('receiver_id = ?', [row.id]).order({id: true}).execute(function(err, job_rows){
-              _.each(job_rows, function(job_row){
-                job_row.receiver_name = row.name;
-              }); 
-              if(err){
-                done(err);
-              } else {
-                done(null, job_rows);
-              }
-            });
+            options.receiver_name = row.name;
+            exports.find_jobs_by_id(row._id, options, done);
           });  
         });
         async.parallel(job_find_functions, function(err, results){
@@ -301,7 +383,14 @@ exports.find_jobs = function(receiver_name, callback){
       }
     });
   } else {
-    jobs_query.order({id: true}).execute(function(err, rows){
+    var where_obj = parse_statuses(options.statuses);
+    var q = server.query().select('*').from('jobs');
+    if(where_obj.vars.length > 0){
+      q = q.where(where_obj.text, where_obj.vars);
+    }
+    q = q.order({_id: true});
+    if(options.limit) q = q.limit(options.limit);
+    q.execute(function(err, rows){
       if(err){
         callback(err);
       } else {
@@ -312,7 +401,7 @@ exports.find_jobs = function(receiver_name, callback){
             server.query().
             select('name').
             from('receivers').
-            where('id = ?', [row.receiver_id]).
+            where('_id = ?', [row.receiver_id]).
             execute(function(err, receiver_rows){
               if(err){
                 done(err);
@@ -339,7 +428,11 @@ exports.find_jobs = function(receiver_name, callback){
       }
     });
   }
-}
+};
+
+exports.create_job = function(options){
+  return new Job(options);
+};
 
 new mysql.Database(config.db[environment]).on('error', function(err){
   console.log('Error:' + err);

@@ -1,9 +1,9 @@
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 var http = require('http');
-var models = require('./models');
 var _ = require('underscore');
 var async = require('async');
+var adapter = require('./adapter');
 
 var JobProcessor = function(receiver){
   this.concurrent_connections = 0;
@@ -106,10 +106,7 @@ JobProcessor.prototype.process_queue = function(){
 
 JobProcessor.prototype.initialize_queue = function(){
   var jp = this;
-  var q = models.Job.find({
-    'receiver_id': jp.receiver._id
-  }).or([{status: "overflow"}, {status: "queued"}]).sort('created', 'ascending');
-  q.execFind(function(err, jobs){
+  adapter.find_jobs_by_receiver_id(jp.receiver._id, {statuses: ['overflow', 'queued']}, function(err, jobs){
     _.each(jobs, function(job){
       jp.push(job);
     });
@@ -121,25 +118,14 @@ JobProcessor.prototype.refill_queue = function(){
   var jp = this;
   console.log('R '+this.receiver.name+': state switched to refilling');
   this.state = "refilling";
-  var q = models.Job.find({
-    status: "overflow",
-    'receiver_id': jp.receiver._id
-  }).sort('created', 'ascending').limit(this.refill_size);
-  q.execFind(function(err, jobs){
+  adapter.find_jobs_by_receiver_id(jp.receiver._id, {statuses: ['overflow'], limit: this.refill_size}, function(err, jobs){
     console.log('R '+jp.receiver.name+': retreived ' + jobs.length + " jobs from mongo");
 
     var job_save_states = [];
     var job_queues = [];
     _.each(jobs, function(job){
       job_save_states.push(function(done){
-        job.status = "queued";
-        job.save(function(err){
-          if(err){
-            done(err);
-          } else {
-            done();
-          }
-        });
+        job.setStatus("queued", done);
       });
       job_queues.push(function(done){
         if(jp.concurrent_connections < jp.receiver.concurrency && jp.queue.length == 0){

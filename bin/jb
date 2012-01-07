@@ -12,12 +12,7 @@ if(argv["m"]){
   process.env.NODE_ENV = argv["m"];
 }
 var adapter = require('../adapter');
-
-function wait_for_db(callback){
-  adapter.emitter.on('open', function(){
-    callback();
-  });
-}
+var wait_for_db = require('../lib/wait_for_db')(adapter);
 
 function print_help(){
   console.log('--------------------------');
@@ -347,7 +342,7 @@ commands = {
       } else {
         console.log("List of Current Jobs");
       }
-      adapter.find_jobs(receiver_name, function(err, jobs){
+      adapter.find_jobs_by_receiver_name(receiver_name, {statuses: ['overflow', 'queued']}, function(err, jobs){
         if(err){
           console.log('There has been an error receiving the list of jobs.');
           process.exit();
