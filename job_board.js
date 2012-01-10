@@ -6,6 +6,7 @@ var async = require('async');
 var config = require('./config');
 var job_processor = require('./job_processor');
 var wait_for_db = require('./lib/wait_for_db')(adapter);
+var environment = require('./lib/environment')(process.env.NODE_ENV);
 
 var receiver = express.createServer();
 
@@ -60,7 +61,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       return;
     }
 
-    if(results.receiver.length == 0){
+    if(!results.receiver){
       res.end("No receiver by that name found.");
       console.log("No receiver '" + req.params.receiver_name + "' found.");
       return;
@@ -107,5 +108,5 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
 
 wait_for_db(function(){
   receiver.listen(config.port);
-  console.log("Job Board started listening on TCP/" + config.port);
+  console.log("Job Board (mode: "+environment+") started listening on TCP/" + config.port);
 });

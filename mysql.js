@@ -116,7 +116,17 @@ exports.find_receiver = function(options, callback, limit){
 };
 
 exports.find_receiver_by_name = function(receiver_name, callback){
-  exports.find_receiver({name: receiver_name}, callback, 1);
+  exports.find_receiver({name: receiver_name}, function(err, results){
+    if(err){
+      callback(err);
+    } else {
+      if(results.length == 1){
+        callback(null, results[0]);
+      } else {
+        callback();
+      }
+    }
+  }, 1);
 };
 
 exports.add_receiver = function(options, callback){

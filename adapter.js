@@ -8,7 +8,7 @@ exports.emitter = new EventEmitter();
 function parse_statuses(statuses){
     var status_arr = [];
     if(statuses){
-      _.each(options.statuses, function(status){
+      _.each(statuses, function(status){
         status_arr.push({status: status});
       });
     }
@@ -192,6 +192,6 @@ if(config.db[environment].adapter == "mysql"){
     }
   };
   exports.create_job = function(job, callback){
-    return new models.Job(options);
+    return new models.Job(job);
   };
 }
