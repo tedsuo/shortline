@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var express = require('express');
 var _ = require('underscore');
-var adapter = require('./adapter');
+var adapter = require('./lib/db/adapter');
 var async = require('async');
 var config = require('./config');
 var job_processor = require('./job_processor');

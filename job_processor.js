@@ -3,7 +3,7 @@ var util = require('util');
 var http = require('http');
 var _ = require('underscore');
 var async = require('async');
-var adapter = require('./adapter');
+var adapter = require('./lib/db/adapter');
 
 var JobProcessor = function(receiver){
   this.concurrent_connections = 0;

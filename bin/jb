@@ -11,7 +11,7 @@ var util = require('util');
 if(argv["m"]){
   process.env.NODE_ENV = argv["m"];
 }
-var adapter = require('../adapter');
+var adapter = require('../lib/db/adapter');
 var wait_for_db = require('../lib/wait_for_db')(adapter);
 
 function print_help(){
