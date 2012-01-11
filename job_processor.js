@@ -113,13 +113,13 @@ JobProcessor.prototype.initialize_queue = function(){
   });
 };
 
-// Refill the queue from mongo, in the order the jobs were created
+// Refill the queue from db, in the order the jobs were created
 JobProcessor.prototype.refill_queue = function(){
   var jp = this;
   console.log('R '+this.receiver.name+': state switched to refilling');
   this.state = "refilling";
   adapter.find_jobs_by_receiver_id(jp.receiver._id, {statuses: ['overflow'], limit: this.refill_size}, function(err, jobs){
-    console.log('R '+jp.receiver.name+': retreived ' + jobs.length + " jobs from mongo");
+    console.log('R '+jp.receiver.name+': retreived ' + jobs.length + " jobs from db");
 
     var job_save_states = [];
     var job_queues = [];
@@ -129,7 +129,7 @@ JobProcessor.prototype.refill_queue = function(){
       });
       job_queues.push(function(done){
         if(jp.concurrent_connections < jp.receiver.concurrency && jp.queue.length == 0){
-          // all queued jobs finished while fetching from mongo, and then some
+          // all queued jobs finished while fetching from db, and then some
           jp.process_job(job);
         } else {
           jp.queue.push(job);

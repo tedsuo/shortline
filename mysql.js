@@ -71,7 +71,7 @@ Job.prototype.setStatus = function(status, callback){
       } else {
         j.status = status;
         j.emit('job_saved');
-        if(callback) callback(null, result);
+        if(callback) callback(null, results);
       }
     });
   }

@@ -8,7 +8,7 @@
     "url": "git://github.com/tedsuo/Job-Board.git"
   },
   "engines": {
-    "node": ">=0.6"
+    "node": ">=0.6.0 <=0.6.5"
   },
   "dependencies": {
     "express": ">=2.5.0",
