@@ -8,11 +8,16 @@ var fs = require('fs');
 var colors = require('colors');
 var async = require('async');
 var util = require('util');
-if(argv["m"]){
-  process.env.NODE_ENV = argv["m"];
+
+var adapter, wait_for_db;
+var command = process.argv[2];
+if(command != "stop"){
+  if(argv["m"]){
+    process.env.NODE_ENV = argv["m"];
+  }
+  adapter = require('../lib/db/adapter');
+  wait_for_db = require('../lib/wait_for_db')(adapter);
 }
-var adapter = require('../lib/db/adapter');
-var wait_for_db = require('../lib/wait_for_db')(adapter);
 
 function print_help(){
   console.log('--------------------------');
@@ -64,7 +69,6 @@ function parent_dir(){
 }
 
 function execute_command(commands){
-  var command = process.argv[2];
   if(_.include(Object.keys(commands), command)){
     commands[command]();
   } else {
