@@ -17,7 +17,7 @@ endpoint.post('/some/path', function(req, res){
 endpoint.listen(8010);
 
 function delete_receiver_path(callback){
-  exec(BINPATH + ' delete receiver testing', function(){
+  exec(BINPATH + ' remove receiver testing -m test', function(){
     callback();
   });
 }
@@ -30,13 +30,11 @@ async.series([
       exec(BINPATH + ' add path testing somepath some/path -m test', function(){
         exec("curl -d '{}' http://localhost:"+config.port+"/testing/somepath", function(err, stdout){
           assert.notEqual(stdout.indexOf("Job saved. Good job!"), -1, "Valid receivers should display a confirmation.");
-          exec(BINPATH + ' remove receiver testing -m test', function(err, stderr){
-            setTimeout(function(){
-              delete_receiver_path(function(){
-                assert.fail(false, false, 'Endpoint not reached within 6 seconds.');
-              });
-            }, 6000);
-          });
+          setTimeout(function(){
+            delete_receiver_path(function(){
+              assert.fail(false, false, 'Endpoint not reached within 6 seconds.');
+            });
+          }, 6000);
         });
       });
     });
