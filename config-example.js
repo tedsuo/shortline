@@ -14,28 +14,27 @@ module.exports = {
       "database": "jobboard_test",
       "hosts": [ // one or more if sharded...
         {
-          "hostname": "localhost",
+          "host": "localhost",
           "port": 27017, // optional
         },
         {
-          "hostname": "arbitrary.tld"
+          "host": "arbitrary.tld"
         }
       ]
     },
     production: {
       "adapter": "mysql",
-      "hostname": "localhost",
+      "host": "localhost",
       "user": "user",
       "password": "password",
       "database": "jobboard_production"
     },
     development: {
       "adapter": "mongo",
-      "hostname": "some.tld",
       "database": "jobboard_development",
       "hosts": [
         {
-          "hostname": "some.tld"
+          "host": "some.tld"
         }
       ]
     }

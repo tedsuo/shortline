@@ -5,7 +5,6 @@ var adapter = require('./lib/db/adapter');
 var async = require('async');
 var config = require('./config');
 var job_processor = require('./job_processor');
-var wait_for_db = require('./lib/wait_for_db')(adapter);
 var environment = require('./lib/environment')(process.env.NODE_ENV);
 
 var receiver = express.createServer();
@@ -16,11 +15,9 @@ receiver.configure('development', function(){
 });
 
 var job_queues = {};
-wait_for_db(function(){
-  adapter.find_receiver({}, function(error, receivers){
-    _.each(receivers, function(receiver){
-      job_queues[receiver.name] = new job_processor(receiver);
-    });
+adapter.find_receiver({}, function(error, receivers){
+  _.each(receivers, function(receiver){
+    job_queues[receiver.name] = new job_processor(receiver);
   });
 });
 
@@ -106,7 +103,5 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
   });
 });
 
-wait_for_db(function(){
-  receiver.listen(config.port);
-  console.log("Job Board (mode: "+environment+") started listening on TCP/" + config.port);
-});
+receiver.listen(config.port);
+console.log("Job Board (mode: "+environment+") started listening on TCP/" + config.port);

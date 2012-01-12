@@ -9,14 +9,13 @@ var colors = require('colors');
 var async = require('async');
 var util = require('util');
 
-var adapter, wait_for_db;
+var adapter;
 var command = process.argv[2];
 if(command != "stop"){
   if(argv["m"]){
     process.env.NODE_ENV = argv["m"];
   }
   adapter = require('../lib/db/adapter');
-  wait_for_db = require('../lib/wait_for_db')(adapter);
 }
 
 function print_help(){
@@ -127,35 +126,33 @@ commands = {
   },
 
   ls:function(){
-    wait_for_db(function(){
-      var options = {};
-      if(argv.r){
-        options.name = argv.r;
-        console.log("List Receiver with name \""+argv.r+"\"");
-      } else {
-        console.log("List of Receivers");
-      }
-      console.log("");
-      adapter.find_receiver(options, function(err, docs){
-        if(err){
-          console.log(err);
-          process.exit();
-        }
-        _.each(docs, function(doc){
-          console.log(("["+doc.name.blue+"]").bold);
-          console.log("  Host:          "+doc.host);
-          if(doc.ip) console.log("  IP:            "+doc.ip);
-          console.log("  Port:          "+doc.port);
-          console.log("  Concurrency:   "+doc.concurrency);
-          _.each(doc.paths, function(path){
-            console.log("  →  Path Name:  "+path.name);
-            console.log("     Timeout:    "+path.timeout);
-            console.log("     URL:        "+path.url);
-          })
-          console.log("");
-        })
+    var options = {};
+    if(argv.r){
+      options.name = argv.r;
+      console.log("List Receiver with name \""+argv.r+"\"");
+    } else {
+      console.log("List of Receivers");
+    }
+    console.log("");
+    adapter.find_receiver(options, function(err, docs){
+      if(err){
+        console.log(err);
         process.exit();
-      });
+      }
+      _.each(docs, function(doc){
+        console.log(("["+doc.name.blue+"]").bold);
+        console.log("  Host:          "+doc.host);
+        if(doc.ip) console.log("  IP:            "+doc.ip);
+        console.log("  Port:          "+doc.port);
+        console.log("  Concurrency:   "+doc.concurrency);
+        _.each(doc.paths, function(path){
+          console.log("  →  Path Name:  "+path.name);
+          console.log("     Timeout:    "+path.timeout);
+          console.log("     URL:        "+path.url);
+        })
+        console.log("");
+      })
+      process.exit();
     });
   },
   
@@ -172,26 +169,24 @@ commands = {
           process.exit();
         }
 
-        wait_for_db(function(){
-          var options = {
-            name: name,
-            host: host,
-            concurrency: concurrency,
-            port: port
-          };
+        var options = {
+          name: name,
+          host: host,
+          concurrency: concurrency,
+          port: port
+        };
 
-          if(argv.i) options.ip = argv.i;
-          
-          adapter.add_receiver(options, function(err){
-            if(err){
-              console.log('There has been an error saving this receiver.');
-              process.exit();
-            } else {
-              console.log('You have saved this receiver.');
-              console.log(options);
-              process.exit();
-            }
-          });
+        if(argv.i) options.ip = argv.i;
+        
+        adapter.add_receiver(options, function(err){
+          if(err){
+            console.log('There has been an error saving this receiver.');
+            process.exit();
+          } else {
+            console.log('You have saved this receiver.');
+            console.log(options);
+            process.exit();
+          }
         });
         break;
       case "path":
@@ -207,17 +202,15 @@ commands = {
           process.exit();
         }
         
-        wait_for_db(function(){
-          adapter.add_path(receiver_name, o, function(err){
-            if(err){
-              console.log('There has been an error saving this path.');
-              process.exit();
-            } else {
-              console.log('You have saved this path');
-              console.log(o);
-              process.exit();
-            }
-          });
+        adapter.add_path(receiver_name, o, function(err){
+          if(err){
+            console.log('There has been an error saving this path.');
+            process.exit();
+          } else {
+            console.log('You have saved this path');
+            console.log(o);
+            process.exit();
+          }
         });
         break;
       default:
@@ -235,22 +228,20 @@ commands = {
           process.exit();
         }
 
-        wait_for_db(function(){
-          var options = {};
-          if(argv.n) options.name = argv.n;
-          if(argv.h) options.host = argv.h;
-          if(argv.c) options.concurrency = Number(argv.c);
-          if(argv.p) options.port = Number(argv.p);
-          if(argv.i) options.ip = argv.i;
+        var options = {};
+        if(argv.n) options.name = argv.n;
+        if(argv.h) options.host = argv.h;
+        if(argv.c) options.concurrency = Number(argv.c);
+        if(argv.p) options.port = Number(argv.p);
+        if(argv.i) options.ip = argv.i;
 
-          adapter.update_receiver(name, options, function(err){
-            if(err){
-              console.log('There has been an error updating the receiver.');
-              process.exit();
-            }
-            console.log('You have updated this receiver.');
+        adapter.update_receiver(name, options, function(err){
+          if(err){
+            console.log('There has been an error updating the receiver.');
             process.exit();
-          });
+          }
+          console.log('You have updated this receiver.');
+          process.exit();
         });
         break;
       case "path":
@@ -260,20 +251,18 @@ commands = {
           print_help();
           process.exit();
         }
-        wait_for_db(function(){
-          var options = {};
-          if(argv.n) options.name = argv.n;
-          if(argv.u) options.url = argv.u;
-          if(argv.t) options.timeout = Number(argv.t);
-         
-          adapter.update_path(receiver_name, name, options, function(err){
-            if(err){
-              console.log('There has been an error updating the path.');
-              process.exit();
-            }
-            console.log('You have updated this path.');
+        var options = {};
+        if(argv.n) options.name = argv.n;
+        if(argv.u) options.url = argv.u;
+        if(argv.t) options.timeout = Number(argv.t);
+       
+        adapter.update_path(receiver_name, name, options, function(err){
+          if(err){
+            console.log('There has been an error updating the path.');
             process.exit();
-          });
+          }
+          console.log('You have updated this path.');
+          process.exit();
         });
         break;
       default:
@@ -290,15 +279,13 @@ commands = {
           print_help();
           process.exit();
         }
-        wait_for_db(function(err){
-          adapter.remove_receiver(name, function(err){
-            if(err){
-              console.log('There has been an error removing the receiver.');
-              process.exit();
-            }
-            console.log('You have removed this receiver.');
+        adapter.remove_receiver(name, function(err){
+          if(err){
+            console.log('There has been an error removing the receiver.');
             process.exit();
-          });
+          }
+          console.log('You have removed this receiver.');
+          process.exit();
         });
         break;
       case "path":
@@ -308,27 +295,23 @@ commands = {
           print_help();
           process.exit();
         }
-        wait_for_db(function(){
-          adapter.remove_path(receiver_name, name, function(err){
-            if(err){
-              console.log('There has been an error removing the path.');
-              process.exit();
-            }
-            console.log('You have removed this path.');
+        adapter.remove_path(receiver_name, name, function(err){
+          if(err){
+            console.log('There has been an error removing the path.');
             process.exit();
-          });
+          }
+          console.log('You have removed this path.');
+          process.exit();
         });
         break;
       case "all":
-        wait_for_db(function(){
-          adapter.remove_all(function(err){
-            if(err){
-              console.log('There has been an error removing all records.');
-              process.exit();
-            }
-            console.log('All records dropped from database.');
+        adapter.remove_all(function(err){
+          if(err){
+            console.log('There has been an error removing all records.');
             process.exit();
-          });
+          }
+          console.log('All records dropped from database.');
+          process.exit();
         });
         break;
       default:
@@ -338,31 +321,29 @@ commands = {
   },
 
   status:function(){
-    wait_for_db(function(){
-      var receiver_name = null;
-      if(argv.r){
-        receiver_name = argv.r;
-        console.log("List of Current Jobs with Receiver: \""+argv.r+"\"");
-      } else {
-        console.log("List of Current Jobs");
-      }
-      adapter.find_jobs_by_receiver_name(receiver_name, {statuses: ['overflow', 'queued']}, function(err, jobs){
-        if(err){
-          console.log('There has been an error receiving the list of jobs.');
-          process.exit();
-        }
-        var x = 0;
-        _.each(jobs, function(job){
-          x++;
-          console.log();
-          console.log("Job #" + x + ":");
-          console.log("   Receiver:  "+job.receiver_name);
-          console.log("   Path:      "+job.path);
-          console.log("   Post Data: "+job.payload);
-          console.log("   Status:    "+job.status);
-        });
+    var receiver_name = null;
+    if(argv.r){
+      receiver_name = argv.r;
+      console.log("List of Current Jobs with Receiver: \""+argv.r+"\"");
+    } else {
+      console.log("List of Current Jobs");
+    }
+    adapter.find_jobs_by_receiver_name(receiver_name, {statuses: ['overflow', 'queued']}, function(err, jobs){
+      if(err){
+        console.log('There has been an error receiving the list of jobs.');
         process.exit();
+      }
+      var x = 0;
+      _.each(jobs, function(job){
+        x++;
+        console.log();
+        console.log("Job #" + x + ":");
+        console.log("   Receiver:  "+job.receiver_name);
+        console.log("   Path:      "+job.path);
+        console.log("   Post Data: "+job.payload);
+        console.log("   Status:    "+job.status);
       });
+      process.exit();
     });
   }
 }
