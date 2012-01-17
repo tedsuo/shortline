@@ -47,7 +47,7 @@ async.series([
             delete_receiver_path(function(){
               assert.fail(false, false, 'All jobs not complete within 4 seconds.');
             });
-          }, 40000);
+          }, 4000);
         });
       });
     });
