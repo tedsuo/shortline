@@ -5,6 +5,15 @@ var _ = require('underscore');
 var async = require('async');
 var adapter = require('./lib/db/adapter');
 
+// # JobProcessor
+// 
+// ### States
+// - open
+// - queued
+// - draining
+// - refilling
+// 
+
 var JobProcessor = function(receiver){
   this.concurrent_connections = 0;
   this.queue = [];
