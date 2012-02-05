@@ -2,21 +2,17 @@
 var exec = require("child_process").exec;
 var spawn = require("child_process").spawn;
 var argv = require('optimist').argv;
-var config = require('../config');
 var _ = require('underscore');
 var fs = require('fs');
 var colors = require('colors');
 var async = require('async');
 var util = require('util');
 
-var adapter;
+var cwd = process.cwd();
 var command = process.argv[2];
-if(command != "stop"){
-  if(argv["m"]){
-    process.env.NODE_ENV = argv["m"];
-  }
-  adapter = require('../lib/db/adapter');
-}
+var adapter;
+var config;
+
 
 function print_help(){
   console.log('--------------------------');
@@ -69,6 +65,13 @@ function parent_dir(){
 
 function execute_command(commands){
   if(_.include(Object.keys(commands), command)){
+    config = require(cwd+'/jb_config');
+    if(command !== "stop"){
+      if(argv["m"]){
+        process.env.NODE_ENV = argv["m"];
+      }
+      adapter = require('../lib/db/adapter');
+    }
     commands[command]();
   } else {
     print_help();
