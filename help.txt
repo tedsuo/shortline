@@ -1,0 +1,41 @@
+--------------------------
+     LIST OF COMMANDS
+--------------------------
+Note: valid modes are development, test, and production. Defaults to development.
+
+start [-m <mode>]
+   * Start the job_board daemon
+
+stop
+   * Stop the job_board daemon
+
+add receiver <name> <host> [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]
+   * Add a receiver for the given host
+
+add path <receiver_name> <name> <url> [-t <timeout>] [-m <mode>]
+   * Add an endpoint path for the given receiver.
+
+update receiver <name> [-n <new_name>] [-h <host>] [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]
+   * Update given receiver
+
+update path <receiver_name> <name> [-n <new_name>] [-u <url>] [-t <timeout>] [-m <mode>]
+   * Update given path
+
+ls [-r <receiver_name>] [-m <mode>]
+   * List receivers and paths
+
+status [-r <receiver_name>] [-m <mode>]
+   * List current jobs
+
+remove receiver <name> [-m <mode>]
+   * Remove given receiver, and all children paths
+
+remove path <receiver_name> <name> [-m <mode>]
+   * Remove given path
+
+remove all [-m <mode>]
+   * Remove all data from database
+
+help
+   * Display this dialog
+

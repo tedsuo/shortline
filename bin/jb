@@ -15,47 +15,7 @@ var config;
 
 
 function print_help(){
-  console.log('--------------------------');
-  console.log('     LIST OF COMMANDS');
-  console.log('--------------------------');
-  console.log('Note: valid modes are development, test, and production. Defaults to development.');
-  console.log('');
-  console.log('start [-m <mode>]');
-  console.log('   * Start the job_board daemon');
-  console.log('');
-  console.log('stop');
-  console.log('   * Stop the job_board daemon');
-  console.log('');
-  console.log('add receiver <name> <host> [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]');
-  console.log('   * Add a receiver for the given host');
-  console.log('');
-  console.log('add path <receiver_name> <name> <url> [-t <timeout>] [-m <mode>]');
-  console.log('   * Add an endpoint path for the given receiver.');
-  console.log('');
-  console.log('update receiver <name> [-n <new_name>] [-h <host>] [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]');
-  console.log('   * Update given receiver');
-  console.log('');
-  console.log('update path <receiver_name> <name> [-n <new_name>] [-u <url>] [-t <timeout>] [-m <mode>]');
-  console.log('   * Update given path');
-  console.log('');
-  console.log('ls [-r <receiver_name>] [-m <mode>]');
-  console.log('   * List receivers and paths');
-  console.log('');
-  console.log('status [-r <receiver_name>] [-m <mode>]');
-  console.log('   * List current jobs');
-  console.log('');
-  console.log('remove receiver <name> [-m <mode>]');
-  console.log('   * Remove given receiver, and all children paths');
-  console.log('');
-  console.log('remove path <receiver_name> <name> [-m <mode>]');
-  console.log('   * Remove given path');
-  console.log('');
-  console.log('remove all [-m <mode>]');
-  console.log('   * Remove all data from database');
-  console.log('');
-  console.log('help');
-  console.log('   * Display this dialog');
-  console.log('');
+  console.log( fs.readFileSync(__dirname+'/../help.txt').toString());
 }
 
 function parent_dir(){
@@ -78,6 +38,7 @@ function execute_command(commands){
     process.exit();
   }
 }
+
 // jb start -p 3030 -c jb_conf
 commands = {
   start:function(port){
