@@ -16,27 +16,34 @@ module.exports = {
         {
           "host": "localhost",
           "port": 27017, // optional
-        },
-        {
-          "host": "arbitrary.tld"
         }
       ]
     },
+    
+    production: {
+      "adapter": "mongo",
+      "database": "jobboard_production",
+      "hosts": [
+        {
+          "host": "localhost",
+          "port": 27017, // optional
+        },
+        {
+          "host": "example.com"
+        }
+      ]
+    }
+
+/*  MySQL example
+
     production: {
       "adapter": "mysql",
       "host": "localhost",
       "user": "user",
       "password": "password",
       "database": "jobboard_production"
-    },
-    development: {
-      "adapter": "mongo",
-      "database": "jobboard_development",
-      "hosts": [
-        {
-          "host": "some.tld"
-        }
-      ]
     }
+
+*/
   }
 };
