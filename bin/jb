@@ -10,9 +10,9 @@ var util = require('util');
 
 var cwd = process.cwd();
 var command = process.argv[2];
+var mobettah_config_path = argv.config ? argv.config+'/mobettah_config.js' : process.cwd()+'/mobettah_config.js'
 var adapter;
 var config;
-
 
 function print_help(){
   console.log( fs.readFileSync(__dirname+'/../help.txt').toString());
@@ -56,7 +56,7 @@ commands = {
 
           var preexec = "";
           if(argv['m']) process.env.NODE_ENV = argv.m;
-          var child = spawn(mobettah_cmd, ['-c', parent_dir() + '/mobettah_config.js', parent_dir() + "/job_board.js"]);
+          var child = spawn(mobettah_cmd, ['-c', mobettah_config_path, parent_dir() + "/job_board.js"]);
           child.stdout.on('data', function(data){
             if(data.toString().indexOf("listening") != -1){
               console.log("Job Board process started");
@@ -86,6 +86,15 @@ commands = {
           process.exit();
         }
       });
+    });
+  },
+
+  test:function(){
+    var test_runner = spawn('node',[parent_dir()+'/test/test_runner.js']);
+    test_runner.stdout.pipe(process.stdout);
+    test_runner.stderr.pipe(process.stderr);
+    test_runner.on('exit',function(){
+      process.exit();  
     });
   },
 

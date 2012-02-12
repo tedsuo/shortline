@@ -3,7 +3,7 @@ var async = require('async');
 var exec = require('child_process').exec;
 var express = require('express');
 var config = require('../../../config');
-var BINPATH = '../bin/jb';
+var BINPATH = require('../../test_config').BINPATH;
 
 var endpoint = express.createServer();
 

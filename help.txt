@@ -36,6 +36,9 @@ remove path <receiver_name> <name> [-m <mode>]
 remove all [-m <mode>]
    * Remove all data from database
 
+test
+   * Run the test suite 
+
 help
    * Display this dialog
 

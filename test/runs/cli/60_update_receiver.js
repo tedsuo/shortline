@@ -2,14 +2,16 @@ var assert = require('assert');
 var async = require('async');
 var exec = require('child_process').exec;
 var fs = require('fs');
-var BINPATH = '../bin/jb';
+var BINPATH = require('../../test_config').BINPATH;
 
 async.series([
   function(next){
     console.log("Update receiver updates the given receiver");
     exec(BINPATH + ' add receiver testing www.example.com -c 50 -m test', function(err, stdout, stderr){
       exec(BINPATH + ' update receiver testing -n newname -h new.example.com -c 30 -m test', function(err, stdout){
-        assert.equal(err, null, "jb should not give an error while updating");
+        console.dir(err);
+        assert.ifError(err);
+        // assert.equal(err, null, "jb should not give an error while updating");
         assert.notEqual(stdout.indexOf("You have updated this receiver."), -1, "Updating receiver should output a confirmation message.");
         async.parallel([
           function(done){

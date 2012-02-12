@@ -2,7 +2,7 @@ var assert = require('assert');
 var async = require('async');
 var exec = require('child_process').exec;
 var fs = require('fs');
-var BINPATH = '../bin/jb';
+var BINPATH = require('../../test_config').BINPATH;
 
 var pid = null;
 var pid_file = '/var/run/job_board.pid';
