@@ -20,6 +20,9 @@
     "mysql": ">=0.9.5",
     "mongoose": ">=2.4.10"
   },
+  "devDependencies": {
+    "mocha": "*"
+  },
   "main" : "job_board",
   "directories" : { 
     "lib" : "./lib",
@@ -29,6 +32,5 @@
     "test" : "cd test && node test_runner.js",
     "start" : "./bin/jb start",
     "stop" : "./bin/jb stop"
-  },
-  "devDependencies": {}
+  }
 }
