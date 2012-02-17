@@ -21,7 +21,7 @@ var JobProcessor = function(receiver){
   // Refill size should be half the max_queue size
   this.refill_size = receiver.concurrency * 5;
   this.receiver = receiver;
-
+  this.name = receiver.name;
   this.state = "open";
 
   // Node 0.6
