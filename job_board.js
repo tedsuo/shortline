@@ -28,7 +28,7 @@ receiver.get('/', function(req, res){
 receiver.post('/:receiver_name/:path_name', function(req, res){
   if(!_.include(config.trusted_ips, req.client.remoteAddress)){
     res.send("You are not authorized to push to JobBoard.");
-    console.log('An unauthorized client tried to push to job board from ip ' + req.connection.remote_address);
+    console.log('An unauthorized client tried to push to job board from ip ' + req.client.remoteAddress);
     return;
   }
 
