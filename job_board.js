@@ -8,6 +8,7 @@ var async = require('async');
 var config = require('./config');
 var job_processor = require('./job_processor');
 var environment = require('./lib/environment')(process.env.NODE_ENV);
+var job_processor = require('./lib/model/job_processor');
 
 var receiver = express.createServer();
 
