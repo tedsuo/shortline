@@ -7,6 +7,7 @@ var fs = require('fs');
 var colors = require('colors');
 var async = require('async');
 var util = require('util');
+var log = require('../lib/log');
 
 var cwd = process.cwd();
 var command = process.argv[2];
@@ -278,6 +279,7 @@ commands = {
         });
         break;
       case "all":
+        log.info('starting all');
         adapter.remove_all(function(err){
           if(err){
             console.log('There has been an error removing all records.');

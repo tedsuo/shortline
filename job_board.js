@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+var log = require('./lib/log');
+log.info('JobBoard server starting in '+environment+' mode');
 var express = require('express');
 var _ = require('underscore');
 var adapter = require('./lib/db/adapter');
