@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+var environment = require('./lib/environment')();
 var log = require('./lib/log');
 log.info('JobBoard server starting in '+environment+' mode');
 var express = require('express');
@@ -6,9 +7,8 @@ var _ = require('underscore');
 var adapter = require('./lib/db/adapter');
 var async = require('async');
 var config = require('./config');
-var job_processor = require('./job_processor');
-var environment = require('./lib/environment')(process.env.NODE_ENV);
 var job_processor = require('./lib/model/job_processor');
+
 
 var receiver = express.createServer();
 
@@ -48,7 +48,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
     },
     receiver: function(done){
       if(job_queues[req.params.receiver_name]){
-        done(null, job_queues[req.params.receiver_name].receiver);
+        done(null, job_queues[req.params.receiver_name]);
       } else {
         adapter.find_receiver_by_name(req.params.receiver_name, function(err, receiver){
           done(null, receiver);
@@ -83,26 +83,31 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       return;
     }
 
-    var job = adapter.create_job({
-      path: path.url,
-      payload: req_json_string,
-      host: receiver.host,
-      port: receiver.port || config.default_receiver_port,
-      timeout: path.timeout || config.default_receiver_timeout,
-      receiver_id: receiver._id
-    });
+    adapter.create_job(
+      {
+        path: path.url,
+        payload: req_json_string,
+        host: receiver.host,
+        port: receiver.port || config.default_receiver_port,
+        timeout: path.timeout || config.default_receiver_timeout,
+        receiver_id: receiver._id
+      },
+      function(err,job){
+        job.on('job_saved', function(){
+          res.end('Job saved. Good job!');
+          job.removeAllListeners();
+        });
 
-    job.on('job_saved', function(){
-      res.end('Job saved. Good job!');
-      job.removeAllListeners();
-    });
+        job.on('job_save_error', function(){
+          res.end('Job failed to save');
+          job.removeAllListeners();
+        });
+        
+        job_queues[receiver.name].push(job);
+      }
+    );
 
-    job.on('job_save_error', function(){
-      res.end('Job failed to save');
-      job.removeAllListeners();
-    });
     
-    job_queues[receiver.name].push(job);
   });
 });
 
