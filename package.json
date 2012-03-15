@@ -18,7 +18,8 @@
     "colors": ">=0.5.1",
     "mobettah": ">=0.1.1",
     "mysql": ">=0.9.5",
-    "mongoose": ">=2.4.10"
+    "mongoose": ">=2.4.10",
+    "log": "*"
   },
   "devDependencies": {
     "mocha": "*"
