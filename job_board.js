@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 var environment = require('./lib/environment')();
-var log = require('./lib/log');
+var log = require(__dirname__+'/lib/log');
 log.info('JobBoard server starting in '+environment+' mode');
 var express = require('express');
 var _ = require('underscore');
@@ -82,7 +82,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
       console.log("No path '" + req.params.path_name + "' found.");
       return;
     }
-
+    log.info('REC_ID: '+receiver.id);
     adapter.create_job(
       {
         path: path.url,
@@ -90,7 +90,7 @@ receiver.post('/:receiver_name/:path_name', function(req, res){
         host: receiver.host,
         port: receiver.port || config.default_receiver_port,
         timeout: path.timeout || config.default_receiver_timeout,
-        receiver_id: receiver._id
+        receiver_id: receiver.id
       },
       function(err,job){
         job.on('job_saved', function(){

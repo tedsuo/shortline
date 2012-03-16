@@ -30,7 +30,7 @@
     "bin" : "./bin"
   },
   "scripts" : {
-    "test" : "cd test && node test_runner.js",
+    "test" : "make test",
     "start" : "./bin/jb start",
     "stop" : "./bin/jb stop"
   }

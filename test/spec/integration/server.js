@@ -105,9 +105,18 @@ describe('Server', function(){
 
 
   describe('Handle Overflow',function(){
+    before(function(done){
+      var jb = new JobBoard();
+      jb.remove_all(function(err){
+        if(err) return done(err);
+        done();  
+      });
+    });
+
     it("Server retreives and completes overflow jobs from db",function(next){
       var endpoint_reached_count = 0;
       var total_requests = 200;
+
       endpoint.post('/some/overflow', function(req, res){
         endpoint_reached_count++;
         console.log('hit endpoint '+endpoint_reached_count);
@@ -128,6 +137,10 @@ describe('Server', function(){
           }
         });
       });
+
+      setTimeout(function(){
+        process.exit(); 
+      }, 4500);
     });
   });
 
