@@ -10,7 +10,8 @@ var fs = require('fs');
 var colors = require('colors');
 var async = require('async');
 var util = require('util');
-var log = require('../lib/log');
+var path = require('path');
+var log = require(path.normalize(__dirname+'/../lib/log'));
 
 var cwd = process.cwd();
 var command = process.argv[2];

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var environment = require('./lib/environment')();
-var log = require(__dirname__+'/lib/log');
+var path = require('path');
+var log = require(path.normalize(__dirname+'/lib/log'));
 log.info('JobBoard server starting in '+environment+' mode');
 var express = require('express');
 var _ = require('underscore');
