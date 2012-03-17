@@ -119,14 +119,12 @@ describe('Server', function(){
 
       endpoint.post('/some/overflow', function(req, res){
         endpoint_reached_count++;
-        console.log('hit endpoint '+endpoint_reached_count);
         if(endpoint_reached_count == total_requests){
-          console.log('hit final endpoint');
           next();
         }
         setTimeout(function(){
           res.end('got it');
-        }, 100);
+        }, 50);
       });
 
       exec(BINPATH + ' add receiver testoverflow localhost -p 8010 -c 5 -m test', function(){
@@ -137,12 +135,6 @@ describe('Server', function(){
           }
         });
       });
-
-      setTimeout(function(){
-        process.exit(); 
-      }, 4500);
     });
   });
-
-
 });
