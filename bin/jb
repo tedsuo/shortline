@@ -33,7 +33,7 @@ function parent_dir(){
 
 function execute_command(commands){
   if(_.include(Object.keys(commands), command)){
-    config = require(cwd+'/jb_config');
+    config = require('../lib/config');
     if(command !== "stop"){
       adapter = require('../lib/db/adapter');
     }

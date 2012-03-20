@@ -4,7 +4,7 @@ var exec = require('child_process').exec;
 var express = require('express');
 var BINPATH = require('../../test_config').BINPATH;
 var ROOT = require('../../test_config').ROOT;
-var config = require(ROOT+'config');
+var config = require(ROOT+'lib/config');
 var JobBoard = require(ROOT+'lib/model/job_board');
 
 function delete_receiver_path(callback){
