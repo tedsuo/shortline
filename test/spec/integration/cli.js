@@ -3,7 +3,7 @@ var async = require('async');
 var exec = require('child_process').exec;
 var BINPATH = require('../../test_config').BINPATH; 
 
-var count_jb_processes = 'ps aux | grep Job-Board/job_board.js | grep -v grep | grep -v mobettah | grep -v vim | wc -l';
+var count_jb_processes = 'ps aux | grep Job-Board/lib/server.js | grep -v grep | grep -v mobettah | grep -v vim | wc -l';
 
 describe('CLI interface',function(){
 

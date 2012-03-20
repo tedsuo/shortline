@@ -14,6 +14,8 @@ var path = require('path');
 var log = require(path.normalize(__dirname+'/../lib/log'));
 
 var cwd = process.cwd();
+var SERVER_PATH = path.normalize(__dirname+'/../lib/server.js');
+var SERVER_PATH = parent_dir() + "/lib/server.js";
 var command = process.argv[2];
 var mobettah_config_path = argv.config ? argv.config+'/mobettah_config.js' : process.cwd()+'/mobettah_config.js'
 var adapter;
@@ -45,7 +47,7 @@ function execute_command(commands){
 // jb start -p 3030 -c jb_conf
 commands = {
   start:function(port){
-    exec('ps aux | grep '+ parent_dir() +'/job_board.js | grep -v grep | wc -l', function(error, stdout){
+    exec('ps aux | grep '+ SERVER_PATH +' | grep -v grep | wc -l', function(error, stdout){
       if(error){
         console.log("ERROR: Job Board could not start: " + error);
       }
@@ -59,7 +61,13 @@ commands = {
 
           var preexec = "";
 
-          var child = spawn(mobettah_cmd, ['-c', mobettah_config_path, parent_dir() + "/job_board.js"]);
+          var child = spawn(mobettah_cmd, ['-c', mobettah_config_path, 'node', SERVER_PATH]);
+          child.stdout.on('data', function(data){
+            log.info(data.toString());
+          });
+          child.stderr.on('data', function(data){
+            log.info(data.toString());
+          });
           child.stdout.on('data', function(data){
             if(data.toString().indexOf("listening") != -1){
               console.log("Job Board process started");
