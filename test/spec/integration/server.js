@@ -2,6 +2,7 @@ var assert = require('assert');
 var async = require('async');
 var exec = require('child_process').exec;
 var express = require('express');
+var http = require('http');
 var BINPATH = require('../../test_config').BINPATH;
 var ROOT = require('../../test_config').ROOT;
 var config = require(ROOT+'lib/config');
@@ -129,9 +130,16 @@ describe('Server', function(){
 
       exec(BINPATH + ' add receiver testoverflow localhost -p 8010 -c 5 -m test', function(){
         exec(BINPATH + ' add path testoverflow someoverflow some/overflow -m test', function(){
+          var options = {
+            host: 'localhost',
+            port: config.port,
+            path: '/testoverflow/someoverflow',
+            method: 'POST'
+          };
           for(var x = 0; x < total_requests; x++){
-            exec("curl -d '{}' http://localhost:"+config.port+"/testoverflow/someoverflow", function(){
-            });
+            var req = http.request(options, function(){});
+            req.write("{}");
+            req.end();
           }
         });
       });
