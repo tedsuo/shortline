@@ -1,8 +1,6 @@
 .DS_Store
 node_modules/
 *.swp
-config.js
 mobettah_config.js
 docs/
 jb_config.js
-mobettah_config.js
