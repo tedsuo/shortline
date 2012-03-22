@@ -35,8 +35,8 @@ describe('JobBoard',function(){
 
     it('removed receiver should no longer be in database',function(done){
       db.find_receiver_by_name(receiver.name,function(err,r){
-        assert.equal(err,'No such receiver found');
-        assert.equal(r,undefined);
+        assert.ok( err instanceof Error);
+        assert.equal( r, undefined);
         done();
       });
     });
@@ -177,7 +177,8 @@ describe('JobBoard',function(){
 
     it('receiver should not be in database',function(done){
       db.find_receiver_by_name(fixture.name,function(err,receiver){
-        assert.equal(err,'No such receiver found');
+        assert.ok( err instanceof Error);
+        assert.equal( receiver, undefined);
         done();
       });
     });

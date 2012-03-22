@@ -57,7 +57,7 @@ describe('Server', function(){
           body += chunk;
         });
         res.on('end',function(){
-          assert.notEqual(body.indexOf("No receiver by that name found."), -1, "False receivers should display an error");
+          assert.notEqual(body.indexOf("No receiver 'false' found."), -1, "False receivers should display an error");
           next();
         });
       });
