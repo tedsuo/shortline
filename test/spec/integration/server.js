@@ -163,11 +163,26 @@ describe('Server', function(){
     it("Server retreives and completes overflow jobs from db",function(next){
       var endpoint_reached_count = 0;
       var total_requests = 200;
+      var job_requests_map = [];
 
       endpoint.post('/some/overflow', function(req, res){
         endpoint_reached_count++;
+        var body = "";
+        req.on('data', function(chunk){
+          body += chunk;
+        });
+        req.on('end', function(){
+          job_requests_map[body]++;
+        });
         if(endpoint_reached_count == total_requests){
-          next();
+          setTimeout(function(){
+            _.each(job_requests_map, function(requests){
+              if(requests != 1){
+                assert.equal(requests,1,"Server is not completing all jobs");
+              }
+            });
+            next();
+          }, 100);
         }
         setTimeout(function(){
           res.end('got it');
@@ -177,11 +192,12 @@ describe('Server', function(){
       exec(BINPATH + ' add receiver testoverflow localhost -p 8010 -c 5 -m test', function(){
         exec(BINPATH + ' add path testoverflow someoverflow some/overflow -m test', function(){
           var options = _.extend({path: '/testoverflow/someoverflow'}, generic_request_options);
-          for(var x = 0; x < total_requests; x++){
+          _.each(_.range(0, total_requests), function(x){
             var req = http.request(options, function(){});
-            req.write("{}");
+            job_requests_map[x] = 0;
+            req.write(x.toString());
             req.end();
-          }
+          });
         });
       });
     });
