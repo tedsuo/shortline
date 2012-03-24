@@ -15,8 +15,7 @@ function delete_receiver_path(callback){
   });
 }
 
-var endpoint = express.createServer();
-endpoint.listen(8010);
+var endpoint;
 
 var generic_request_options = {
   host: 'localhost',
@@ -27,6 +26,9 @@ var generic_request_options = {
 describe('Server', function(){
 
   before(function(done){
+    endpoint = express.createServer();
+    endpoint.listen(8010);
+
     var jb = new JobBoard();
     jb.remove_all(function(err){
       if(err) return done(err);
@@ -38,6 +40,7 @@ describe('Server', function(){
   });
 
   after(function(done){
+    endpoint.close();
     var jb = new JobBoard();
     jb.remove_all(function(err){
       if(err){
@@ -134,8 +137,8 @@ describe('Server', function(){
         next();
       });
       var options = _.extend({path: '/testing/somepath'}, generic_request_options);
-      var body = "";
       var req = http.request(options, function(res){
+        var body = "";
         res.on('data',function(chunk){
           body += chunk;
         });
@@ -143,63 +146,7 @@ describe('Server', function(){
           assert.notEqual(body.indexOf("Job saved. Good job!"), -1, "Valid receivers should display a confirmation.");
         });
       });
-      req.write("{}");
-      req.end();
-    });
-  });
-
-
-
-
-  describe('Handle Overflow',function(){
-    before(function(done){
-      var jb = new JobBoard();
-      jb.remove_all(function(err){
-        if(err) return done(err);
-        done();  
-      });
-    });
-
-    it("Server retreives and completes overflow jobs from db",function(next){
-      var endpoint_reached_count = 0;
-      var total_requests = 200;
-      var job_requests_map = [];
-
-      endpoint.post('/some/overflow', function(req, res){
-        endpoint_reached_count++;
-        var body = "";
-        req.on('data', function(chunk){
-          body += chunk;
-        });
-        req.on('end', function(){
-          job_requests_map[body]++;
-        });
-        if(endpoint_reached_count == total_requests){
-          setTimeout(function(){
-            _.each(job_requests_map, function(requests){
-              if(requests != 1){
-                assert.equal(requests,1,"Server is not completing all jobs");
-              }
-            });
-            next();
-          }, 100);
-        }
-        setTimeout(function(){
-          res.end('got it');
-        }, 50);
-      });
-
-      exec(BINPATH + ' add receiver testoverflow localhost -p 8010 -c 5 -m test', function(){
-        exec(BINPATH + ' add path testoverflow someoverflow some/overflow -m test', function(){
-          var options = _.extend({path: '/testoverflow/someoverflow'}, generic_request_options);
-          _.each(_.range(0, total_requests), function(x){
-            var req = http.request(options, function(){});
-            job_requests_map[x] = 0;
-            req.write(x.toString());
-            req.end();
-          });
-        });
-      });
+      req.end("{}");
     });
   });
 });
