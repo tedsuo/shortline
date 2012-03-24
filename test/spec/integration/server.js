@@ -40,9 +40,15 @@ describe('Server', function(){
   after(function(done){
     var jb = new JobBoard();
     jb.remove_all(function(err){
-      if(err) return done(err);
+      if(err){
+        console.log('error removing data');
+        return done(err);
+      }
       exec(BINPATH + " stop -m test", function(err){
-        if(err) return done(err);
+        if(err){
+          console.log('error stoping jb');
+          return done(err);
+        }
         done();  
       });
     });
@@ -73,7 +79,7 @@ describe('Server', function(){
             body += chunk;
           });
           res.on('end',function(){
-            assert.notEqual(body.indexOf("No path by that name found."), -1, "False paths should display an error");
+            assert.notEqual(body.indexOf('Path not found'), -1, "False paths should display an error");
             exec(BINPATH + " remove receiver somerecv -m test", function(err, stdout){
               if(err) return next(err);
               next();
