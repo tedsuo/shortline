@@ -357,10 +357,7 @@ describe('remove_path', function(){
         jobs.forEach(function(job){
           jb.create_job(job,function(err,job){
             if(err) return next(err);
-            job.save(function(err){
-              if(err) return next(err);
-              next(null,job);
-            });
+            next(null,job);
           });
         });
       });
@@ -369,13 +366,10 @@ describe('remove_path', function(){
     it('should create and retrieve jobs',function(done){
       var job = jb.create_job(fix.job(job_options),function(err,job){
         if(err) return done(err);
-        job.save(function(err){
+        jb.get_job(job._id,function(err,retrieved_job){
           if(err) return done(err);
-          jb.get_job(job._id,function(err,retrieved_job){
-            if(err) return done(err);
-            assert.equal(job.payload,retrieved_job.payload);
-            done();
-          });
+          assert.equal(job.payload,retrieved_job.payload);
+          done();
         });        
       });
     });
