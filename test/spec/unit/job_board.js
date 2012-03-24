@@ -409,4 +409,37 @@ describe('remove_path', function(){
     });
   });
 
+  describe("push", function(){
+    var receiver_options = {
+      name: 'push_test',
+      paths: [{
+        name: 'pusher',
+        url: '/foo'
+      }]
+    };
+    
+    var job_options = {
+      receiver: 'push_test',
+      path: 'pusher',
+      payload: 'push=true'
+    };
+
+    beforeEach(function(done){
+      jb.add_receiver(receiver_options,function(err){
+        done(err);
+      });
+    });
+
+    it("should add jobs to db", function(done){
+      jb.push(fix.job(job_options),function(err,job){
+        if(err) return done(err);
+        jb.get_job(job._id,function(err,retrieved_job){
+          if(err) return done(err);
+          assert.equal(job.payload,retrieved_job.payload);
+          done();
+        });
+      });
+    });
+  });
+
 });
