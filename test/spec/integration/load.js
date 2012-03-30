@@ -88,19 +88,15 @@ function create_response_handler(total_requests,next){
     var last_request;
 
     ++endpoint_reached_count;
-    console.log('endpoint_reached_count',endpoint_reached_count);
     if(endpoint_reached_count === total_requests){
       last_request = true;
-      console.log('LAST EXPECTED REQUEST RECEIVED');
     }
 
     ++concurrent_requests;
-    console.log('concurrent_requests',concurrent_requests);
     if(concurrent_requests > 5){
   //          return next(new Error('too many concurrent requests'));
     }
 
-    console.log('body',req.body);
     if(job_requests_map[Number(req.body)]){
       job_requests_map[Number(req.body)]++;
     } else {
@@ -110,9 +106,7 @@ function create_response_handler(total_requests,next){
       --concurrent_requests;
       res.end('got it');
       if(last_request){
-        console.log('FINAL RESPONSE');
         setTimeout(function(){
-          console.log(job_requests_map);
           assert.equal(job_requests_map.length,total_requests);
           _.each(job_requests_map, function(requests){
             if(requests != 1){
