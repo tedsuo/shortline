@@ -24,8 +24,9 @@ describe('JobProcessor',function(){
       assert.equal(jp.host, 'foo.com');
       assert.equal(jp.port, 80);
       assert.equal(jp.concurrency, 5);
-      assert.equal(jp.max_queue, 50);
-      assert.equal(jp.refill_size, 25);
+      assert.equal(jp.refill_point, 25);
+      assert.equal(jp.refill_size, 50);
+      assert.equal(jp.draining_point, 50);
       done();
     });
 
@@ -47,8 +48,9 @@ describe('JobProcessor',function(){
       assert.equal(jp.port, 8080);
       //assert.equal(jp.paths, paths);
       assert.equal(jp.concurrency, 10);
-      assert.equal(jp.max_queue, 100);
-      assert.equal(jp.refill_size, 50);
+      assert.equal(jp.refill_point, 50);
+      assert.equal(jp.refill_size, 100);
+      assert.equal(jp.draining_point, 100);
       done();
     });
   });
