@@ -9,8 +9,8 @@ module.exports = {
   db: {
     test: {
       "adapter": "mongo", // mongo or mysql
-      "user": "user", //optional
-      "password": "password", //optional
+      // "user": "user", //optional
+      // "password": "password", //optional
       "database": "jobboard_test",
       "hosts": [ // one or more if sharded...
         {
@@ -27,10 +27,10 @@ module.exports = {
         {
           "host": "localhost",
           "port": 27017, // optional
-        },
+        }/* , // For multiple hosts..
         {
           "host": "example.com"
-        }
+        }*/
       ]
     }
 
