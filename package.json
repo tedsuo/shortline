@@ -2,7 +2,7 @@
   "author": "tedsuo,Hainish,jackaperkins",
   "name": "jamboree",
   "description": "Job Queueing done easy",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "repository": {
     "type": "git",
     "url": "git://github.com/tedsuo/jamboree.git"
