@@ -44,6 +44,33 @@ function execute_command(commands){
   }
 }
 
+function mobettah_boot(mobettah_cmd, mobettah_config_file){
+  var preexec = "";
+
+  var child_args = [];
+  if(mobettah_config_file != null){
+    child_args.push('-c');
+    child_args.push(mobettah_config_file);
+  }
+  child_args.push('node');
+  child_args.push(SERVER_PATH);
+  
+  var child = spawn(mobettah_cmd, child_args);
+  child.stdout.on('data', function(data){
+    log.info(data.toString());
+  });
+  child.stderr.on('data', function(data){
+    log.info(data.toString());
+  });
+  child.stdout.on('data', function(data){
+    if(data.toString().indexOf("listening") != -1){
+      console.log("Jamboree process started");
+      process.exit();
+    }
+  });
+}
+
+
 // jb start -p 3030 -c jb_conf
 commands = {
   start:function(port){
@@ -59,41 +86,23 @@ commands = {
             var mobettah_cmd = "mobettah";
           }
 
-          var mobettah_config_file;
-          process.cwd()+'/mobettah_config.js'
-          try{
-            if(argv.config){
-              mobettah_config_file = argv.config+'/'+default_mobettah_jamboree_local_conffile;
-            } else if(fs.statSync(default_mobettah_jamboree_conffile)){
-              mobettah_config_file = mobettah_config_path;
-            } else if(fs.statSync(process.cwd()+'/'+default_mobettah_jamboree_local_conffile)){
-              mobettah_config_file = process.cwd()+'/'+default_mobettah_jamboree_local_conffile;
-            }
-          } catch(e){}
-
-          var preexec = "";
-
-          var child_args = [];
-          if(mobettah_config_file != undefined){
-            child_args.push('-c');
-            child_args.push(mobettah_config_file);
+          if(argv.config){
+            mobettah_boot(mobettah_cmd, argv.config+'/'+default_mobettah_jamboree_local_conffile);
+          } else {
+            fs.stat(default_mobettah_jamboree_conffile, function(err){
+              if(err){
+                fs.stat(process.cwd()+'/'+default_mobettah_jamboree_local_conffile, function(err){
+                  if(err){
+                    mobettah_boot(mobettah_cmd, null);
+                  } else {
+                    mobettah_boot(mobettah_cmd, process.cwd()+'/'+default_mobettah_jamboree_local_conffile);
+                  }
+                });
+              } else {
+                mobettah_boot(mobettah_cmd, default_mobettah_jamboree_conffile);
+              }
+            });
           }
-          child_args.push('node');
-          child_args.push(SERVER_PATH);
-
-          var child = spawn(mobettah_cmd, child_args);
-          child.stdout.on('data', function(data){
-            log.info(data.toString());
-          });
-          child.stderr.on('data', function(data){
-            log.info(data.toString());
-          });
-          child.stdout.on('data', function(data){
-            if(data.toString().indexOf("listening") != -1){
-              console.log("Jamboree process started");
-              process.exit();
-            }
-          });
         });
       } else {
         console.log("ERROR: An instance of Jamboree is already running.");
