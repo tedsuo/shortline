@@ -1,25 +1,25 @@
 #! /bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          job-board
+# Provides:          jamboree
 # Required-Start:    $all
 # Required-Stop:     $all
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: starts the job board server
-# Description:       starts job board using start-stop-daemon
+# Short-Description: starts the jamboree server
+# Description:       starts jamboree using start-stop-daemon
 ### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=jb
-NAME=job-board
-DESC=job-board
+NAME=jamboree
+DESC=jamboree
 
 #test -x $DAEMON || exit 0
 
-# Include job-board defaults if available
-if [ -f /etc/default/job-board ] ; then
-  . /etc/default/job-board
+# Include jamboree defaults if available
+if [ -f /etc/default/jamboree ] ; then
+  . /etc/default/jamboree
 fi
 
 set -e

@@ -7,7 +7,7 @@ var http = require('http');
 var BINPATH = require('../../test_config').BINPATH;
 var ROOT = require('../../test_config').ROOT;
 var config = require(ROOT+'lib/config');
-var JobBoard = require(ROOT+'lib/model/job_board');
+var Jamboree = require(ROOT+'lib/model/jamboree');
 
 var endpoint;
 
@@ -16,7 +16,7 @@ describe('Load', function(){
   before(function(done){
     endpoint = express.createServer();
     endpoint.listen(8010);
-    var jb = new JobBoard();
+    var jb = new Jamboree();
     jb.remove_all(function(err){
       if(err) return done(err);
       exec(BINPATH + " start -m test", function(err){
@@ -28,7 +28,7 @@ describe('Load', function(){
 
   after(function(done){
     endpoint.close();
-    var jb = new JobBoard();
+    var jb = new Jamboree();
     jb.remove_all(function(err){
       if(err) return done(err);
       exec(BINPATH + " stop -m test", done);

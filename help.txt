@@ -4,9 +4,9 @@
 Note: valid modes are development, test, and production. Defaults to development.
 
 start [-m <mode>]
-      * Start the job_board daemon
+      * Start the jamboree daemon
 stop
-      * Stop the job_board daemon
+      * Stop the jamboree daemon
 add receiver <name> <host> [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]
       * Add a receiver for the given host
 add path <receiver_name> <name> <url> [-t <timeout>] [-m <mode>]

@@ -1,5 +1,5 @@
 var ROOT = require('../../test_config').ROOT;
-var JobBoard = require(ROOT+'lib/model/job_board');
+var Jamboree = require(ROOT+'lib/model/jamboree');
 var db = require(ROOT+'lib/db/adapter');
 var assert = require('assert');
 var async = require('async');
@@ -7,10 +7,10 @@ var fix = require(ROOT+'test/fixtures');
 var jb;
 
 
-describe('JobBoard',function(){
+describe('Jamboree',function(){
 
   before(function(){
-    jb = new JobBoard();
+    jb = new Jamboree();
   });
 
   beforeEach(function(done){
@@ -55,7 +55,7 @@ describe('JobBoard',function(){
           jb.add_receiver(fix.receiver(),next);
         }
       ],function(){
-        var jb2 = new JobBoard();
+        var jb2 = new Jamboree();
         assert.equal(jb2.count_receivers(),0);
         jb2.load_receivers(function(err){
           if(err) return done(err);
@@ -91,7 +91,7 @@ describe('JobBoard',function(){
     it("should find receiver by name", function(done){
       var fixture = fix.receiver();
       jb.add_receiver(fixture, function(){
-        var jb2 = new JobBoard();
+        var jb2 = new Jamboree();
         jb2.get_receiver(fixture.name,function(err,receiver){
           if(err) return done(err);
           assert.equal(receiver.name,fixture.name);
@@ -209,7 +209,7 @@ describe('JobBoard',function(){
     });
 
     it('path should be in database',function(done){
-      var jb2 = new JobBoard();
+      var jb2 = new Jamboree();
       jb2.get_receiver(receiver.name,function(err,receiver){
         if(err) return done(err);
         assert.equal(receiver.paths[path.name].name, path.name);
@@ -246,7 +246,7 @@ describe('JobBoard',function(){
     });
 
     it('path should be updated in database',function(done){
-      var jb2 = new JobBoard();
+      var jb2 = new Jamboree();
       jb2.get_receiver(receiver.name,function(err,receiver){
         if(err) return done(err);
         assert.equal(receiver.paths[path2.name].name, path2.name);
@@ -282,7 +282,7 @@ describe('remove_path', function(){
     });
 
     it('path should be removed from database',function(done){
-      var jb2 = new JobBoard();
+      var jb2 = new Jamboree();
       jb2.get_path( receiver.name, path.name, function(err,path){
         assert.equal(path,undefined);
         assert.ok(err);
@@ -314,7 +314,7 @@ describe('remove_path', function(){
     });
 
     it("should find path by name from db", function(done){
-      var jb2 = new JobBoard();
+      var jb2 = new Jamboree();
       jb2.get_path(receiver.name,path.name,function(err,result){
         if(err) return done(err);
         assert.equal(result.name,path.name);
@@ -383,7 +383,7 @@ describe('remove_path', function(){
     });
 
     it("should find jobs by receiver id from db", function(done){
-      var jb2 = new JobBoard();
+      var jb2 = new Jamboree();
       jb2.find_jobs_by_receiver_id(receiver.id,{},function(err,result){
         if(err) return done(err);
         assert.equal(result.length,jobs.length);
@@ -400,7 +400,7 @@ describe('remove_path', function(){
     });
 
     it("should find jobs by receiver name from db", function(done){
-      var jb2 = new JobBoard();
+      var jb2 = new Jamboree();
       jb2.find_jobs_by_receiver_name(receiver.name,{},function(err,result){
         if(err) return done(err);
         assert.equal(result.length,jobs.length);

@@ -49,7 +49,7 @@ commands = {
   start:function(port){
     exec('ps aux | grep '+ SERVER_PATH +' | grep -v grep | wc -l', function(error, stdout){
       if(error){
-        console.log("ERROR: Job Board could not start: " + error);
+        console.log("ERROR: Jamboree could not start: " + error);
       }
       if(stdout.trim() == '0'){
         exec('which mobettah | wc -l', function(error, stdout){
@@ -70,13 +70,13 @@ commands = {
           });
           child.stdout.on('data', function(data){
             if(data.toString().indexOf("listening") != -1){
-              console.log("Job Board process started");
+              console.log("Jamboree process started");
               process.exit();
             }
           });
         });
       } else {
-        console.log("ERROR: An instance of Job Board is already running.");
+        console.log("ERROR: An instance of Jamboree is already running.");
         process.exit();
       }
     });
@@ -85,15 +85,15 @@ commands = {
   stop:function(){
     fs.readFile("/tmp/mobettah.pid", function(err, data){
       if(err){
-        console.log('ERROR: Could not stop job board: ' + err);
+        console.log('ERROR: Could not stop jamboree: ' + err);
         process.exit();
       }
       exec("kill "+data.toString(), function(error, response){
         if(!error) {
-          console.log("Job Board process stopped");
+          console.log("Jamboree process stopped");
           process.exit();
         } else {
-          console.log("ERROR: Job Board could not quit: " + error);
+          console.log("ERROR: Jamboree could not quit: " + error);
           process.exit();
         }
       });

@@ -3,16 +3,16 @@ var async = require('async');
 var exec = require('child_process').exec;
 var BINPATH = require('../../test_config').BINPATH; 
 
-var count_jb_processes = 'ps aux | grep Job-Board/lib/server.js | grep -v grep | grep -v mobettah | grep -v vim | wc -l';
+var count_jb_processes = 'ps aux | grep lib/server.js | grep -v grep | grep -v mobettah | grep -v vim | wc -l';
 
 describe('CLI interface',function(){
 
   after(function(next){
     exec(count_jb_processes, function(err, stdout){
-      assert.equal(stdout.trim(),'1','Job board process should exist before stop');
+      assert.equal(stdout.trim(),'1','Jamboree process should exist before stop');
       exec(BINPATH + ' stop', function(err, stdout, stderr){
         exec(count_jb_processes, function(err, stdout){
-          assert.equal(stdout.trim(),'0','Job board should not exist after stop');
+          assert.equal(stdout.trim(),'0','Jamboree should not exist after stop');
           next();
         });
       });
@@ -35,25 +35,25 @@ describe('CLI interface',function(){
 
   describe('start', function(){
 
-    it("should create a new job board process", function(next){
+    it("should create a new jamboree process", function(next){
       exec(count_jb_processes, function(err, stdout){
         if(err) return next(err);
-        assert.equal(stdout.trim(),'0','Job board process should not exist before start');
+        assert.equal(stdout.trim(),'0','Jamboree process should not exist before start');
         exec(BINPATH + ' start -m test', function(err, stdout, stderr){
           if(err) return next(err);
           exec(count_jb_processes, function(err, stdout){
             if(err) return next(err);
-            assert.equal(stdout.trim(),'1','Job board process should exist after start');
+            assert.equal(stdout.trim(),'1','Jamboree process should exist after start');
             next();
           });
         });
       });
     });
 
-    it('shouldn\'t create multiple job board processes',function(next){
+    it('shouldn\'t create multiple jamboree processes',function(next){
       exec(BINPATH + ' start -m test', function(err, stdout, stderr){
         exec(count_jb_processes, function(err, stdout){
-          assert.equal(stdout.trim(),'1','jb start should not create multiple job board processes');
+          assert.equal(stdout.trim(),'1','jb start should not create multiple jamboree processes');
           next();
         });
       });

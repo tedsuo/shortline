@@ -1,11 +1,11 @@
 {
   "author": "tedsuo,Hainish,jackaperkins",
-  "name": "job_board",
+  "name": "jamboree",
   "description": "Job Queueing done easy",
   "version": "0.1.4",
   "repository": {
     "type": "git",
-    "url": "git://github.com/tedsuo/Job-Board.git"
+    "url": "git://github.com/tedsuo/Jamboree.git"
   },
   "engines": {
     "node": ">=0.6.0 <=0.6.5"
@@ -24,7 +24,7 @@
   "devDependencies": {
     "mocha": "*"
   },
-  "main" : "job_board",
+  "main" : "jamboree",
   "directories" : { 
     "lib" : "./lib",
     "bin" : "./bin"
