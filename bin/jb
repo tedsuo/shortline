@@ -12,14 +12,14 @@ var async = require('async');
 var util = require('util');
 var path = require('path');
 var log = require(path.normalize(__dirname+'/../lib/log'));
+var default_mobettah_jamboree_conffile = '/etc/mobettah_jamboree.js';
+var default_mobettah_jamboree_local_conffile = 'mobettah_config.js';
 
 var cwd = process.cwd();
 var SERVER_PATH = path.normalize(__dirname+'/../lib/server.js');
 var SERVER_PATH = parent_dir() + "/lib/server.js";
 var command = process.argv[2];
-var mobettah_config_path = argv.config ? argv.config+'/mobettah_config.js' : process.cwd()+'/mobettah_config.js'
 var adapter;
-var default_jamboree_conffile = '/etc/jamboree.js';
 var config;
 
 function print_help(){
@@ -33,11 +33,6 @@ function parent_dir(){
 
 function execute_command(commands){
   if(_.include(Object.keys(commands), command)){
-    if(process.env.JAMBOREE_CONFFILE == undefined){
-      try{
-        if(fs.statSync(default_jamboree_conffile)) process.env.JAMBOREE_CONFFILE = default_jamboree_conffile;
-      } catch(e){}
-    }
     config = require('../lib/config');
     if(command !== "stop"){
       adapter = require('../lib/db/adapter');
@@ -64,8 +59,16 @@ commands = {
             var mobettah_cmd = "mobettah";
           }
 
+          var mobettah_config_file;
+          process.cwd()+'/mobettah_config.js'
           try{
-            if(fs.statSync(mobettah_config_path)) var mobettah_config_file = mobettah_config_path;
+            if(argv.config){
+              mobettah_config_file = argv.config+'/'+default_mobettah_jamboree_local_conffile;
+            } else if(fs.statSync(default_mobettah_jamboree_conffile)){
+              mobettah_config_file = mobettah_config_path;
+            } else if(fs.statSync(process.cwd()+'/'+default_mobettah_jamboree_local_conffile)){
+              mobettah_config_file = process.cwd()+'/'+default_mobettah_jamboree_local_conffile;
+            }
           } catch(e){}
 
           var preexec = "";
