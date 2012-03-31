@@ -2,13 +2,13 @@
   "author": "tedsuo,Hainish,jackaperkins",
   "name": "jamboree",
   "description": "Job Queueing done easy",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "repository": {
     "type": "git",
     "url": "git://github.com/tedsuo/jamboree.git"
   },
   "engines": {
-    "node": ">=0.6.0 <=0.6.5"
+    "node": ">=0.6"
   },
   "dependencies": {
     "express": ">=2.5.0",
@@ -16,7 +16,7 @@
     "async": ">=0.1.15",
     "optimist": ">=0.2.8",
     "colors": ">=0.5.1",
-    "mobettah": ">=0.1.1",
+    "mobettah": ">=0.1.2",
     "mysql": ">=0.9.5",
     "mongoose": "2.5.x",
     "log": "*"
