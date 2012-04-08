@@ -193,7 +193,7 @@ describe('Jamboree',function(){
     beforeEach(function(done){
       jb.add_receiver(receiver,function(err,q){
         if(err) return done(err);
-        jb.add_path(q.name,path,function(err){
+        jb.add_path(receiver.name,path,function(err){
           if(err) return done(err);
           done();
         });
@@ -225,11 +225,11 @@ describe('Jamboree',function(){
     var path2 = fix.path();
 
     beforeEach(function(done){
-      jb.add_receiver(receiver,function(err,q){
+      jb.add_receiver(receiver,function(err){
         if(err) return done(err);
-        jb.add_path(q.name,path,function(err){
+        jb.add_path(receiver.name,path,function(err){
           if(err) return done(err);
-          jb.update_path(q.name,path.name,path2,function(err){
+          jb.update_path(receiver.name,path.name,path2,function(err){
             if(err) return done(err);
             done();
           });
@@ -325,19 +325,18 @@ describe('remove_path', function(){
   });
   
   describe('jobs', function(){
-    var receiver, job_options, jobs, next;
+    var receiver = fix.receiver();
+    var job_options, jobs, next, receiver_id;
 
     beforeEach(function(done){
-      jb.add_receiver(fix.receiver(),function(err,r){
+      jb.add_receiver(receiver,function(err, r){
         if(err) return done(err);
-        
-        receiver = r;
-
         job_options = {
-          receiver_id:receiver.id,
-          receiver_name:receiver.name,
+          receiver_id: r.id,
           status: 'queued'
         };
+
+        receiver_id = r.id;
 
         jobs = [
           fix.job(job_options),
@@ -375,7 +374,7 @@ describe('remove_path', function(){
     });
 
     it("should find jobs by receiver id", function(done){
-      jb.find_jobs_by_receiver_id(receiver.id,null,function(err,result){
+      jb.find_jobs_by_receiver_id(receiver_id,null,function(err,result){
         if(err) return done(err);
         assert.equal(result.length,jobs.length);
         done();
@@ -384,7 +383,7 @@ describe('remove_path', function(){
 
     it("should find jobs by receiver id from db", function(done){
       var jb2 = new Jamboree();
-      jb2.find_jobs_by_receiver_id(receiver.id,{},function(err,result){
+      jb2.find_jobs_by_receiver_id(receiver_id,{},function(err,result){
         if(err) return done(err);
         assert.equal(result.length,jobs.length);
         done();
@@ -415,7 +414,8 @@ describe('remove_path', function(){
       paths: [{
         name: 'pusher',
         url: '/foo'
-      }]
+      }],
+      host: 'localhost'
     };
     
     var job_options = {
