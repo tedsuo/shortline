@@ -11,7 +11,7 @@ module.exports = {
       "adapter": "mongo", // mongo or mysql
       // "user": "user", //optional
       // "password": "password", //optional
-      "database": "jamboree_test",
+      "database": "shortline_test",
       "hosts": [ // one or more if sharded...
         {
           "host": "localhost",
@@ -22,7 +22,7 @@ module.exports = {
     
     production: {
       "adapter": "mongo",
-      "database": "jamboree_production",
+      "database": "shortline_production",
       "hosts": [
         {
           "host": "localhost",
@@ -41,7 +41,7 @@ module.exports = {
       "host": "localhost",
       "user": "user",
       "password": "password",
-      "database": "jamboree_production"
+      "database": "shortline_production"
     }
 
 */

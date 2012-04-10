@@ -4,9 +4,9 @@
 Note: valid modes are development, test, and production. Defaults to development.
 
 start [-m <mode>]
-      * Start the jamboree daemon
+      * Start the shortline daemon
 stop
-      * Stop the jamboree daemon
+      * Stop the shortline daemon
 add receiver <name> <host> [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]
       * Add a receiver for the given host
 add path <receiver_name> <name> <url> [-t <timeout>] [-m <mode>]

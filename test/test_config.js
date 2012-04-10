@@ -1,2 +1,2 @@
-exports.BINPATH = __dirname+'/../bin/jb';
+exports.BINPATH = __dirname+'/../bin/short';
 exports.ROOT = __dirname+'/../';

@@ -3,16 +3,16 @@ var async = require('async');
 var exec = require('child_process').exec;
 var BINPATH = require('../../test_config').BINPATH; 
 
-var count_jb_processes = 'ps aux | grep lib/server.js | grep -v grep | grep -v mobettah | grep -v vim | wc -l';
+var count_short_processes = 'ps aux | grep lib/server.js | grep -v grep | grep -v mobettah | grep -v vim | wc -l';
 
 describe('CLI interface',function(){
 
   after(function(next){
-    exec(count_jb_processes, function(err, stdout){
-      assert.equal(stdout.trim(),'1','Jamboree process should exist before stop');
+    exec(count_short_processes, function(err, stdout){
+      assert.equal(stdout.trim(),'1','Shortline process should exist before stop');
       exec(BINPATH + ' stop', function(err, stdout, stderr){
-        exec(count_jb_processes, function(err, stdout){
-          assert.equal(stdout.trim(),'0','Jamboree should not exist after stop');
+        exec(count_short_processes, function(err, stdout){
+          assert.equal(stdout.trim(),'0','Shortline should not exist after stop');
           next();
         });
       });
@@ -35,25 +35,25 @@ describe('CLI interface',function(){
 
   describe('start', function(){
 
-    it("should create a new jamboree process", function(next){
-      exec(count_jb_processes, function(err, stdout){
+    it("should create a new shortline process", function(next){
+      exec(count_short_processes, function(err, stdout){
         if(err) return next(err);
-        assert.equal(stdout.trim(),'0','Jamboree process should not exist before start');
+        assert.equal(stdout.trim(),'0','Shortline process should not exist before start');
         exec(BINPATH + ' start -m test', function(err, stdout, stderr){
           if(err) return next(err);
-          exec(count_jb_processes, function(err, stdout){
+          exec(count_short_processes, function(err, stdout){
             if(err) return next(err);
-            assert.equal(stdout.trim(),'1','Jamboree process should exist after start');
+            assert.equal(stdout.trim(),'1','Shortline process should exist after start');
             next();
           });
         });
       });
     });
 
-    it('shouldn\'t create multiple jamboree processes',function(next){
+    it('shouldn\'t create multiple shortline processes',function(next){
       exec(BINPATH + ' start -m test', function(err, stdout, stderr){
-        exec(count_jb_processes, function(err, stdout){
-          assert.equal(stdout.trim(),'1','jb start should not create multiple jamboree processes');
+        exec(count_short_processes, function(err, stdout){
+          assert.equal(stdout.trim(),'1','short start should not create multiple shortline processes');
           next();
         });
       });
@@ -63,8 +63,8 @@ describe('CLI interface',function(){
   describe('add receiver', function(){
     it("should add a new receiver",function(next){
       exec(BINPATH + ' add receiver testing www.example.com -m test', function(err, stdout, stderr){
-        assert.equal(err,null, 'jb command should not return error');
-        assert.notEqual(stdout.indexOf("You have saved this receiver."), -1, "jb should send a confirmation message for saving receiver");
+        assert.equal(err,null, 'short command should not return error');
+        assert.notEqual(stdout.indexOf("You have saved this receiver."), -1, "short should send a confirmation message for saving receiver");
         exec(BINPATH + ' ls -m test | grep testing | wc -l', function(err, stdout){
           assert.equal(stdout.trim(), '1', "A receiver should have been added and listed");
           next();
@@ -92,8 +92,8 @@ describe('CLI interface',function(){
     it("should add a new path",function(next){
       exec(BINPATH + ' add receiver testing www.example.com -m test', function(err, stdout){
         exec(BINPATH + ' add path testing somepath some/path -m test', function(err, stdout, stderr){
-          assert.equal(err,null, 'jb command should not return error');
-          assert.notEqual(stdout.indexOf("You have saved this path"), -1, "jb should send a confirmation message for saving path");
+          assert.equal(err,null, 'short command should not return error');
+          assert.notEqual(stdout.indexOf("You have saved this path"), -1, "short should send a confirmation message for saving path");
           exec(BINPATH + ' ls -m test | grep somepath | wc -l', function(err, stdout){
             assert.equal(stdout.trim(), '1', "A path should have been added and listed");
             next();
@@ -125,7 +125,7 @@ describe('CLI interface',function(){
       exec(BINPATH + ' add receiver testing www.example.com -c 50 -m test', function(err, stdout, stderr){
         exec(BINPATH + ' update receiver testing -n newname -h new.example.com -c 30 -m test', function(err, stdout){
           assert.ifError(err);
-          // assert.equal(err, null, "jb should not give an error while updating");
+          // assert.equal(err, null, "short should not give an error while updating");
           assert.notEqual(stdout.indexOf("You have updated this receiver."), -1, "Updating receiver should output a confirmation message.");
           async.parallel([
             function(done){
@@ -156,7 +156,7 @@ describe('CLI interface',function(){
       exec(BINPATH + ' add receiver testing www.example.com -m test', function(err, stdout, stderr){
         exec(BINPATH + ' add path testing somepath some/path -t 5000 -m test', function(err, stdout, stderr){
           exec(BINPATH + ' update path testing somepath -n newpathname -u some/newpath -t 1000 -m test', function(err, stdout){
-            assert.equal(err, null, "jb should not give an error while updating");
+            assert.equal(err, null, "short should not give an error while updating");
             assert.notEqual(stdout.indexOf("You have updated this path."), -1, "Updating path should output a confirmation message.");
             async.parallel([
               function(done){

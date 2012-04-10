@@ -1,11 +1,11 @@
 {
   "author": "tedsuo,Hainish,jackaperkins",
-  "name": "jamboree",
-  "description": "Job Queueing done easy",
+  "name": "shortline",
+  "description": "job queueing over http",
   "version": "0.1.6",
   "repository": {
     "type": "git",
-    "url": "git://github.com/tedsuo/jamboree.git"
+    "url": "git://github.com/tedsuo/shortline.git"
   },
   "engines": {
     "node": ">=0.6"
@@ -24,14 +24,14 @@
   "devDependencies": {
     "mocha": "*"
   },
-  "main" : "jamboree",
+  "main" : "shortline",
   "directories" : { 
     "lib" : "./lib",
     "bin" : "./bin"
   },
   "scripts" : {
     "test" : "make test",
-    "start" : "./bin/jb start",
-    "stop" : "./bin/jb stop"
+    "start" : "./bin/short start",
+    "stop" : "./bin/short stop"
   }
 }

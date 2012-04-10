@@ -7,7 +7,7 @@ var http = require('http');
 var BINPATH = require('../../test_config').BINPATH;
 var ROOT = require('../../test_config').ROOT;
 var config = require(ROOT+'lib/config');
-var Jamboree = require(ROOT+'lib/model/jamboree');
+var Shortline = require(ROOT+'lib/model/shortline');
 
 var endpoint;
 
@@ -16,8 +16,8 @@ describe('Load', function(){
   before(function(done){
     endpoint = express.createServer();
     endpoint.listen(8010);
-    var jb = new Jamboree();
-    jb.remove_all(function(err){
+    var short = new Shortline();
+    short.remove_all(function(err){
       if(err) return done(err);
       exec(BINPATH + " start -m test", function(err){
         if(err) return done(err);
@@ -28,8 +28,8 @@ describe('Load', function(){
 
   after(function(done){
     endpoint.close();
-    var jb = new Jamboree();
-    jb.remove_all(function(err){
+    var short = new Shortline();
+    short.remove_all(function(err){
       if(err) return done(err);
       exec(BINPATH + " stop -m test", done);
     });

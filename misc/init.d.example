@@ -1,25 +1,25 @@
 #! /bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          jamboree
+# Provides:          shortline
 # Required-Start:    $all
 # Required-Stop:     $all
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: starts the jamboree server
-# Description:       starts jamboree using start-stop-daemon
+# Short-Description: starts the shortline server
+# Description:       starts shortline using start-stop-daemon
 ### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=jb
-NAME=jamboree
-DESC=jamboree
+DAEMON=short
+NAME=shortline
+DESC=shortline
 
 #test -x $DAEMON || exit 0
 
-# Include jamboree defaults if available
-if [ -f /etc/default/jamboree ] ; then
-  . /etc/default/jamboree
+# Include shortline defaults if available
+if [ -f /etc/default/shortline ] ; then
+  . /etc/default/shortline
 fi
 
 set -e

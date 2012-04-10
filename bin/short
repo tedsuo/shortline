@@ -12,8 +12,8 @@ var async = require('async');
 var util = require('util');
 var path = require('path');
 var log = require(path.normalize(__dirname+'/../lib/log'));
-var default_mobettah_jamboree_conffile = '/etc/mobettah_jamboree.js';
-var default_mobettah_jamboree_local_conffile = 'mobettah_config.js';
+var default_mobettah_shortline_conffile = '/etc/mobettah_shortline.js';
+var default_mobettah_shortline_local_conffile = 'mobettah_config.js';
 
 var cwd = process.cwd();
 var SERVER_PATH = path.normalize(__dirname+'/../lib/server.js');
@@ -64,19 +64,19 @@ function mobettah_boot(mobettah_cmd, mobettah_config_file){
   });
   child.stdout.on('data', function(data){
     if(data.toString().indexOf("listening") != -1){
-      console.log("Jamboree process started");
+      console.log("Shortline process started");
       process.exit();
     }
   });
 }
 
 
-// jb start -p 3030 -c jb_conf
+// short start -p 3030 -c short_conf
 commands = {
   start:function(port){
     exec('ps aux | grep '+ SERVER_PATH +' | grep -v grep | wc -l', function(error, stdout){
       if(error){
-        console.log("ERROR: Jamboree could not start: " + error);
+        console.log("ERROR: Shortline could not start: " + error);
       }
       if(stdout.trim() == '0'){
         exec('which mobettah | wc -l', function(error, stdout){
@@ -87,25 +87,25 @@ commands = {
           }
 
           if(argv.config){
-            mobettah_boot(mobettah_cmd, argv.config+'/'+default_mobettah_jamboree_local_conffile);
+            mobettah_boot(mobettah_cmd, argv.config+'/'+default_mobettah_shortline_local_conffile);
           } else {
-            fs.stat(default_mobettah_jamboree_conffile, function(err){
+            fs.stat(default_mobettah_shortline_conffile, function(err){
               if(err){
-                fs.stat(process.cwd()+'/'+default_mobettah_jamboree_local_conffile, function(err){
+                fs.stat(process.cwd()+'/'+default_mobettah_shortline_local_conffile, function(err){
                   if(err){
                     mobettah_boot(mobettah_cmd, null);
                   } else {
-                    mobettah_boot(mobettah_cmd, process.cwd()+'/'+default_mobettah_jamboree_local_conffile);
+                    mobettah_boot(mobettah_cmd, process.cwd()+'/'+default_mobettah_shortline_local_conffile);
                   }
                 });
               } else {
-                mobettah_boot(mobettah_cmd, default_mobettah_jamboree_conffile);
+                mobettah_boot(mobettah_cmd, default_mobettah_shortline_conffile);
               }
             });
           }
         });
       } else {
-        console.log("ERROR: An instance of Jamboree is already running.");
+        console.log("ERROR: An instance of Shortline is already running.");
         process.exit();
       }
     });
@@ -114,15 +114,15 @@ commands = {
   stop:function(){
     fs.readFile("/tmp/mobettah.pid", function(err, data){
       if(err){
-        console.log('ERROR: Could not stop jamboree: ' + err);
+        console.log('ERROR: Could not stop shortline: ' + err);
         process.exit();
       }
       exec("kill "+data.toString(), function(error, response){
         if(!error) {
-          console.log("Jamboree process stopped");
+          console.log("Shortline process stopped");
           process.exit();
         } else {
-          console.log("ERROR: Jamboree could not quit: " + error);
+          console.log("ERROR: Shortline could not quit: " + error);
           process.exit();
         }
       });
