@@ -45,5 +45,16 @@ module.exports = {
     }
 
 */
+
+/*  Redis example
+
+    production: {
+      "adapter": "redis",
+      "host": "localhost", // optional
+      "port": 6379, // optional
+      "password": "password", // optional
+      "key_prefix": "shortline_production"
+    }
+*/
   }
 };
