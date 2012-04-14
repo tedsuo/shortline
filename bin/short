@@ -138,15 +138,15 @@ commands = {
   },
 
   ls:function(){
-    var options = {};
     if(argv.r){
-      options.name = argv.r;
       console.log("List Receiver with name \""+argv.r+"\"");
+      adapter.find_receiver_by_name(argv.r, handle_receivers);
     } else {
       console.log("List of Receivers");
+      adapter.find_all_receivers(handle_receivers);
     }
     console.log("");
-    adapter.find_receiver(options, function(err, docs){
+    function handle_receivers(err, docs){
       if(err){
         console.log(err);
         process.exit();
@@ -165,7 +165,7 @@ commands = {
         console.log("");
       })
       process.exit();
-    });
+    };
   },
   
   add:function(){
