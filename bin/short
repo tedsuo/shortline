@@ -130,11 +130,9 @@ commands = {
   },
 
   test:function(){
-    var test_runner = spawn('node',[parent_dir()+'/test/test_runner.js']);
-    test_runner.stdout.pipe(process.stdout);
-    test_runner.stderr.pipe(process.stderr);
+    var test_runner = spawn('npm',['test'], {customFds: [0,1,2], cwd: parent_dir()});
     test_runner.on('exit',function(){
-      process.exit();  
+      process.exit();
     });
   },
 
