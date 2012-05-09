@@ -8,7 +8,7 @@
     "url": "git://github.com/tedsuo/shortline.git"
   },
   "engines": {
-    "node": ">=0.6"
+    "node": ">=0.6.17"
   },
   "dependencies": {
     "express": ">=2.5.0",
