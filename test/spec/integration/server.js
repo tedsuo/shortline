@@ -15,7 +15,7 @@ function delete_receiver_path(callback){
   });
 }
 
-var endpoint;
+var endpoint, server;
 
 var generic_request_options = {
   host: 'localhost',
@@ -26,8 +26,8 @@ var generic_request_options = {
 describe('Server', function(){
 
   before(function(done){
-    endpoint = express.createServer();
-    endpoint.listen(8010);
+    endpoint = express();
+    server = http.createServer(endpoint).listen(8010);
 
     var short = new Shortline();
     short.remove_all(function(err){
@@ -40,7 +40,7 @@ describe('Server', function(){
   });
 
   after(function(done){
-    endpoint.close();
+    server.close();
     var short = new Shortline();
     short.remove_all(function(err){
       if(err){

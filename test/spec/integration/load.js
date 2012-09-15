@@ -9,13 +9,13 @@ var ROOT = require('../../test_config').ROOT;
 var config = require(ROOT+'lib/config');
 var Shortline = require(ROOT+'lib/model/shortline');
 
-var endpoint;
+var endpoint, server;
 
 describe('Load', function(){
 
   before(function(done){
-    endpoint = express.createServer();
-    endpoint.listen(8010);
+    endpoint = express();
+    server = http.createServer(endpoint).listen(8010);
     var short = new Shortline();
     short.remove_all(function(err){
       if(err) return done(err);
@@ -27,7 +27,7 @@ describe('Load', function(){
   });
 
   after(function(done){
-    endpoint.close();
+    server.close();
     var short = new Shortline();
     short.remove_all(function(err){
       if(err) return done(err);
