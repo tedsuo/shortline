@@ -44,9 +44,7 @@ describe('Load', function(){
       create_response_handler(total_requests,next)
     );
 
-    exec(BINPATH + ' add path testoverflow someoverflow some/overflow -m test', function(){
-      load_test('/testoverflow/someoverflow',total_requests);
-    });
+    load_test('testoverflow', 'some/overflow',total_requests);
   });
 
 });
@@ -54,13 +52,17 @@ describe('Load', function(){
 var generic_request_options = {
   host: 'localhost',
   port: config.port,
-  method: 'POST'
+  method: 'POST',
+  path: '/push'
 };
 
-function load_test(path,total_requests){
+function load_test(receiver, path, total_requests){
   var x = 0;
   var make_request = function(){
-    var options = _.extend({path: path}, generic_request_options);
+    var options = _.extend({headers: {
+      'X-Receiver-Name': receiver,
+      'X-Path': path
+    }}, generic_request_options);
     var req = http.request(options, function(){});
     req.end(x.toString());
     ++x;

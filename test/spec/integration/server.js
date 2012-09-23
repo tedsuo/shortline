@@ -9,18 +9,13 @@ var ROOT = require('../../test_config').ROOT;
 var config = require(ROOT+'lib/config');
 var Shortline = require(ROOT+'lib/model/shortline');
 
-function delete_receiver_path(callback){
-  exec(BINPATH + ' remove receiver testing -m test', function(){
-    callback();
-  });
-}
-
 var endpoint, server;
 
 var generic_request_options = {
   host: 'localhost',
   port: config.port,
-  method: 'POST'
+  method: 'POST',
+  path: '/push'
 };
 
 describe('Server', function(){
@@ -49,7 +44,7 @@ describe('Server', function(){
       }
       exec(BINPATH + " stop -m test", function(err){
         if(err){
-          console.log('error stoping short');
+          console.log('error stopping shortline');
           return done(err);
         }
         done();  
@@ -59,7 +54,10 @@ describe('Server', function(){
 
   describe('False Routes', function(){
     it("should return error message for false receiver",function(next){
-      var options = _.extend({path: '/false/somepath'}, generic_request_options);
+      var options = _.extend({headers: {
+        'X-Receiver-Name': 'false',
+        'X-Path': 'somepath'
+      }}, generic_request_options);
       var body = "";
       var req = http.request(options, function(res){
         res.on('data',function(chunk){
@@ -73,18 +71,23 @@ describe('Server', function(){
       req.write("{}");
       req.end();
     });
-    it("Server displays error for false path",function(next){
-      exec(BINPATH + " add receiver somerecv test.com -m test", function(err, stdout){
-        var options = _.extend({path: '/somerecv/blah'}, generic_request_options);
+  });
+
+  describe('Valid Response',function(){
+    it("shound respond to valid receiver",function(next){
+      exec(BINPATH + ' add receiver testing localhost -p 8010 -m test', function(err, stderr){
+        var options = _.extend({headers: {
+          'X-Receiver-Name': 'testing',
+          'X-Path': 'some/path'
+        }}, generic_request_options);
         var body = "";
         var req = http.request(options, function(res){
           res.on('data',function(chunk){
             body += chunk;
           });
           res.on('end',function(){
-            assert.notEqual(body.indexOf('Path not found'), -1, "False paths should display an error");
-            exec(BINPATH + " remove receiver somerecv -m test", function(err, stdout){
-              if(err) return next(err);
+            assert.notEqual(body.indexOf("Job saved. Good job!"), -1, "Valid receivers should display a confirmation.");
+            exec(BINPATH + ' remove receiver testing -m test', function(err, stderr){
               next();
             });
           });
@@ -95,39 +98,13 @@ describe('Server', function(){
     });
   });
 
-  describe('Valid Response',function(){
-    it("shound respond to valid receiver and path",function(next){
-      exec(BINPATH + ' add receiver testing localhost -p 8010 -m test', function(err, stderr){
-        exec(BINPATH + ' add path testing somepath some/path -m test', function(err, stderr){
-          var options = _.extend({path: '/testing/somepath'}, generic_request_options);
-          var body = "";
-          var req = http.request(options, function(res){
-            res.on('data',function(chunk){
-              body += chunk;
-            });
-            res.on('end',function(){
-              assert.notEqual(body.indexOf("Job saved. Good job!"), -1, "Valid receivers should display a confirmation.");
-              exec(BINPATH + ' remove receiver testing -m test', function(err, stderr){
-                next();
-              });
-            });
-          });
-          req.write("{}");
-          req.end();
-        });
-      });
-    });
-  });
-
 
 
   describe('Reach Endpoint',function(){
 
     before(function(next){
       exec(BINPATH + ' add receiver testing localhost -p 8010 -m test', function(){
-        exec(BINPATH + ' add path testing somepath some/path -m test', function(){
-          next();
-        });
+        next();
       });
     });
 
@@ -136,7 +113,10 @@ describe('Server', function(){
       endpoint.post('/some/path', function(req, res){
         next();
       });
-      var options = _.extend({path: '/testing/somepath'}, generic_request_options);
+      var options = _.extend({headers: {
+        'X-Receiver-Name': 'testing',
+        'X-Path': 'some/path'
+      }}, generic_request_options);
       var req = http.request(options, function(res){
         var body = "";
         res.on('data',function(chunk){
