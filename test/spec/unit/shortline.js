@@ -271,16 +271,12 @@ describe('Shortline',function(){
   describe("push", function(){
     var receiver_options = {
       name: 'push_test',
-      paths: [{
-        name: 'pusher',
-        url: '/foo'
-      }],
       host: 'localhost'
     };
     
     var job_options = {
       receiver: 'push_test',
-      path: 'pusher',
+      path: '/foo',
       payload: 'push=true'
     };
 

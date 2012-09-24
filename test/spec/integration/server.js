@@ -56,7 +56,7 @@ describe('Server', function(){
     it("should return error message for false receiver",function(next){
       var options = _.extend({headers: {
         'X-Receiver-Name': 'false',
-        'X-Path': 'somepath'
+        'X-Path': '/somepath'
       }}, generic_request_options);
       var body = "";
       var req = http.request(options, function(res){
@@ -78,7 +78,7 @@ describe('Server', function(){
       exec(BINPATH + ' add receiver testing localhost -p 8010 -m test', function(err, stderr){
         var options = _.extend({headers: {
           'X-Receiver-Name': 'testing',
-          'X-Path': 'some/path'
+          'X-Path': '/some/path'
         }}, generic_request_options);
         var body = "";
         var req = http.request(options, function(res){
@@ -115,7 +115,7 @@ describe('Server', function(){
       });
       var options = _.extend({headers: {
         'X-Receiver-Name': 'testing',
-        'X-Path': 'some/path'
+        'X-Path': '/some/path'
       }}, generic_request_options);
       var req = http.request(options, function(res){
         var body = "";

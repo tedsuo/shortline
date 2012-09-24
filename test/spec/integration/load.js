@@ -44,7 +44,7 @@ describe('Load', function(){
       create_response_handler(total_requests,next)
     );
 
-    load_test('testoverflow', 'some/overflow',total_requests);
+    load_test('testoverflow', '/some/overflow',total_requests);
   });
 
 });
