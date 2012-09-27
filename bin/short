@@ -190,25 +190,31 @@ commands = {
           print_help();
           process.exit();
         }
-
-        var options = {
-          name: name,
-          host: host,
-          concurrency: concurrency,
-          port: port
-        };
-
-        if(argv.i) options.ip = argv.i;
         
-        adapter.add_receiver(options, function(err){
-          if(err){
-            console.log('There has been an error saving this receiver.');
-            process.exit();
-          } else {
-            console.log('You have saved this receiver.');
-            console.log(options);
+        adapter.find_receiver_by_name(name, function(err, opts){
+          if(err == null){
+            console.log("Error: A receiver by this name already exists.");
             process.exit();
           }
+          var options = {
+            name: name,
+            host: host,
+            concurrency: concurrency,
+            port: port
+          };
+
+          if(argv.i) options.ip = argv.i;
+          
+          adapter.add_receiver(options, function(err){
+            if(err){
+              console.log('There has been an error saving this receiver.');
+              process.exit();
+            } else {
+              console.log('You have saved this receiver.');
+              console.log(options);
+              process.exit();
+            }
+          });
         });
         break;
       default:

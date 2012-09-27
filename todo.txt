@@ -1,5 +1,4 @@
 THE PLAN
 
-shouldn't add a path with a name that is already taken
 Improve documentation
 create tests for memory leaks
