@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `jobs` (
   `receiver_id` int(10) unsigned NOT NULL,
   `timeout` int(11) NOT NULL,
   `status` varchar(512) NOT NULL,
+  `updated` datetime,
   PRIMARY KEY (`_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
 
