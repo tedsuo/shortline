@@ -1,4 +1,6 @@
 # bash completion for shortline
+# Installation: short completion >> ~/.bashrc
+# Or, maybe: short completion > /etc/bash_completion.d/short
 
 _short()
 {
@@ -12,7 +14,7 @@ _short()
   subcommand=${COMP_WORDS[2]}
   environs='production test'
 
-  commands='start stop add update ls status remove test help'
+  commands='start stop add update ls status remove test help completion'
   if [[ $COMP_CWORD -eq 1 ]]; then
     COMPREPLY=( $( compgen -W "$commands" -- $cur ) )
   else
