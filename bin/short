@@ -56,13 +56,20 @@ function mobettah_boot(mobettah_cmd, mobettah_config_file){
   child_args.push(SERVER_PATH);
   
   var child = spawn(mobettah_cmd, child_args);
-  child.stdout.on('data', function(data){
+  var watch;
+  if(process.env.NODE_ENV == "test"){
+    var info_file = path.join(__dirname,'..','test','log','info.log');
+    watch = spawn('tail', ['-f',info_file,'-n','0']);
+  } else {
+    watch = child;
+  }
+  watch.stdout.on('data', function(data){
     log.info(data.toString());
   });
-  child.stderr.on('data', function(data){
+  watch.stderr.on('data', function(data){
     log.info(data.toString());
   });
-  child.stdout.on('data', function(data){
+  watch.stdout.on('data', function(data){
     if(data.toString().indexOf("listening") != -1){
       console.log("Shortline process started");
       process.exit();
@@ -130,43 +137,45 @@ commands = {
   },
 
   test:function(){
-    var test_runner = spawn('node',[parent_dir()+'/test/test_runner.js']);
-    test_runner.stdout.pipe(process.stdout);
-    test_runner.stderr.pipe(process.stderr);
+    var test_runner = spawn('npm',['test'], {customFds: [0,1,2], cwd: parent_dir()});
     test_runner.on('exit',function(){
-      process.exit();  
+      process.exit();
     });
   },
 
   ls:function(){
-    var options = {};
     if(argv.r){
-      options.name = argv.r;
       console.log("List Receiver with name \""+argv.r+"\"");
+      adapter.find_receiver_by_name(argv.r, list_wrapper(function(receiver){
+        print_receiver(receiver);
+      }));
     } else {
       console.log("List of Receivers");
+      adapter.find_all_receivers(list_wrapper(function(receivers){
+        _.each(receivers, function(receiver){
+          print_receiver(receiver);
+        });
+      }));
     }
     console.log("");
-    adapter.find_receiver(options, function(err, docs){
-      if(err){
-        console.log(err);
+    function print_receiver(doc){
+      console.log(("["+doc.name.blue+"]").bold);
+      console.log("  Host:          "+doc.host);
+      if(doc.ip) console.log("  IP:            "+doc.ip);
+      console.log("  Port:          "+doc.port);
+      console.log("  Concurrency:   "+doc.concurrency);
+      console.log("");
+    };
+    function list_wrapper(cb){
+      return function(err, doc){
+        if(err){
+          console.log(err);
+          process.exit();
+        }
+        cb(doc);
         process.exit();
       }
-      _.each(docs, function(doc){
-        console.log(("["+doc.name.blue+"]").bold);
-        console.log("  Host:          "+doc.host);
-        if(doc.ip) console.log("  IP:            "+doc.ip);
-        console.log("  Port:          "+doc.port);
-        console.log("  Concurrency:   "+doc.concurrency);
-        _.each(doc.paths, function(path){
-          console.log("  →  Path Name:  "+path.name);
-          console.log("     Timeout:    "+path.timeout);
-          console.log("     URL:        "+path.url);
-        })
-        console.log("");
-      })
-      process.exit();
-    });
+    }
   },
   
   add:function(){
@@ -181,49 +190,31 @@ commands = {
           print_help();
           process.exit();
         }
-
-        var options = {
-          name: name,
-          host: host,
-          concurrency: concurrency,
-          port: port
-        };
-
-        if(argv.i) options.ip = argv.i;
         
-        adapter.add_receiver(options, function(err){
-          if(err){
-            console.log('There has been an error saving this receiver.');
-            process.exit();
-          } else {
-            console.log('You have saved this receiver.');
-            console.log(options);
+        adapter.find_receiver_by_name(name, function(err, opts){
+          if(err == null){
+            console.log("Error: A receiver by this name already exists.");
             process.exit();
           }
-        });
-        break;
-      case "path":
-        var o = {
-          name: process.argv[5],
-          url: process.argv[6],
-          timeout: Number(argv.t) || config.default_receiver_timeout
-        };
-        var receiver_name = process.argv[4];
+          var options = {
+            name: name,
+            host: host,
+            concurrency: concurrency,
+            port: port
+          };
 
-        if(!receiver_name || !o.name || !o.url || !_.isNumber(o.timeout)){
-          print_help();
-          process.exit();
-        }
-        
-        adapter.add_path(receiver_name, o, function(err){
-          if(err){
-            console.log('There has been an error saving this path.');
-            process.exit();
-          } else {
-            console.log('You have saved this path');
-            console.log(o);
-            process.exit();
-          }
+          if(argv.i) options.ip = argv.i;
+          
+          adapter.add_receiver(options, function(err){
+            if(err){
+              console.log('There has been an error saving this receiver.');
+              process.exit();
+            } else {
+              console.log('You have saved this receiver.');
+              console.log(options);
+              process.exit();
+            }
+          });
         });
         break;
       default:
@@ -257,27 +248,6 @@ commands = {
           process.exit();
         });
         break;
-      case "path":
-        var receiver_name = process.argv[4];
-        var name = process.argv[5];
-        if(!name || !receiver_name || !(argv.n || argv.u || _.isNumber(argv.t))){
-          print_help();
-          process.exit();
-        }
-        var options = {};
-        if(argv.n) options.name = argv.n;
-        if(argv.u) options.url = argv.u;
-        if(argv.t) options.timeout = Number(argv.t);
-       
-        adapter.update_path(receiver_name, name, options, function(err){
-          if(err){
-            console.log('There has been an error updating the path.');
-            process.exit();
-          }
-          console.log('You have updated this path.');
-          process.exit();
-        });
-        break;
       default:
         print_help();
         process.exit();
@@ -298,22 +268,6 @@ commands = {
             process.exit();
           }
           console.log('You have removed this receiver.');
-          process.exit();
-        });
-        break;
-      case "path":
-        var receiver_name = process.argv[4];
-        var name = process.argv[5];
-        if(!name || !receiver_name){
-          print_help();
-          process.exit();
-        }
-        adapter.remove_path(receiver_name, name, function(err){
-          if(err){
-            console.log('There has been an error removing the path.');
-            process.exit();
-          }
-          console.log('You have removed this path.');
           process.exit();
         });
         break;

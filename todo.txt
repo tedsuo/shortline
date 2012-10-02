@@ -1,4 +1,4 @@
 THE PLAN
 
-Install script (mysql, mongo)
 Improve documentation
+create tests for memory leaks

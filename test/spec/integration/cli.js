@@ -88,38 +88,6 @@ describe('CLI interface',function(){
     });
   });
 
-  describe('Add path', function(){
-    it("should add a new path",function(next){
-      exec(BINPATH + ' add receiver testing www.example.com -m test', function(err, stdout){
-        exec(BINPATH + ' add path testing somepath some/path -m test', function(err, stdout, stderr){
-          assert.equal(err,null, 'short command should not return error');
-          assert.notEqual(stdout.indexOf("You have saved this path"), -1, "short should send a confirmation message for saving path");
-          exec(BINPATH + ' ls -m test | grep somepath | wc -l', function(err, stdout){
-            assert.equal(stdout.trim(), '1', "A path should have been added and listed");
-            next();
-          });
-        });
-      });
-    });
-  });
-
-  describe('remove path', function(){
-    it("Remove path removes the path",function(next){
-      exec(BINPATH + ' ls -m test | grep somepath | wc -l', function(err, stdout){
-        assert.equal(stdout.trim(), '1', "A path should exist before attemting to remove");
-        exec(BINPATH + ' remove path testing somepath -m test', function(err, stdout){
-          assert.notEqual(stdout.indexOf("You have removed this path."), -1, "Removing a path should display a confirmation message");
-          exec(BINPATH + ' ls -m test | grep somepath | wc -l', function(err, stdout){
-            assert.equal(stdout.trim(), '0', "Removed path should not remain in database");
-            exec(BINPATH + ' remove receiver testing -m test', function(err, stdout){
-              next();
-            });
-          });
-        });
-      });
-    });
-  });
-
   describe('update receiver', function(){
     it("should update the given receiver",function(next){
       exec(BINPATH + ' add receiver testing www.example.com -c 50 -m test', function(err, stdout, stderr){
@@ -151,35 +119,4 @@ describe('CLI interface',function(){
     });
   });
 
-  describe('update path', function(){
-    it("should update the given path",function(next){
-      exec(BINPATH + ' add receiver testing www.example.com -m test', function(err, stdout, stderr){
-        exec(BINPATH + ' add path testing somepath some/path -t 5000 -m test', function(err, stdout, stderr){
-          exec(BINPATH + ' update path testing somepath -n newpathname -u some/newpath -t 1000 -m test', function(err, stdout){
-            assert.equal(err, null, "short should not give an error while updating");
-            assert.notEqual(stdout.indexOf("You have updated this path."), -1, "Updating path should output a confirmation message.");
-            async.parallel([
-              function(done){
-                exec(BINPATH + ' ls -m test | grep -A 2 newpathname | egrep "Timeout.*1000" | wc -l', function(err, stdout){
-                  assert.equal(stdout.trim(), '1', "The timeout of the path should have changed");
-                  done();
-                });
-              },
-              function(done){
-                exec(BINPATH + ' ls -m test | grep -A 2 newpathname | egrep "URL.*some/newpath" | wc -l', function(err, stdout){
-                  assert.equal(stdout.trim(), '1', "The URL of the path should have changed");
-                  done();
-                });
-              }
-            ], function(err, result){
-              exec(BINPATH + ' remove receiver testing -m test', function(err, stdout){
-                next();
-              });
-            }
-            );
-          });
-        });
-      });
-    });
-  });
 });
