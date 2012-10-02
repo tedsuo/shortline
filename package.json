@@ -2,7 +2,7 @@
   "author": "tedsuo,Hainish",
   "name": "shortline",
   "description": "job queueing over http",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": {
     "type": "git",
     "url": "git://github.com/tedsuo/shortline.git"
@@ -33,6 +33,7 @@
   "scripts" : {
     "test" : "make test",
     "start" : "./bin/short start",
-    "stop" : "./bin/short stop"
+    "stop" : "./bin/short stop",
+    "install" : "node ./scripts/install.js"
   }
 }
