@@ -33,7 +33,6 @@
   "scripts" : {
     "test" : "make test",
     "start" : "./bin/short start",
-    "stop" : "./bin/short stop",
-    "install" : "node ./scripts/install.js"
+    "stop" : "./bin/short stop"
   }
 }

@@ -313,6 +313,10 @@ commands = {
       });
       process.exit();
     });
+  },
+
+  completion: function(){
+    console.log( fs.readFileSync(__dirname+'/../lib/util/completion.sh').toString());
   }
 }
 

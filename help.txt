@@ -21,5 +21,7 @@ remove all [-m <mode>]
       * Remove all data from database
 test
       * Run the test suite 
+completion
+      * Show the shortline bash completion script
 help
       * Display this dialog
