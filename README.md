@@ -5,12 +5,14 @@
 Shortline is designed to be used as a service, accessed via both a command line and a REST api.
 
 The best way to install shortline is via global npm install:
+
     npm install -g shortline
 
 Once installed, use the cli to create a config file and set up your shortline service.
+
     short install
 
-## CONFIG  
+## CONFIG  SETTINGS
     
 ####  default\_receiver\_timeout _60000_
 maximum amount of time shortline will wait before closing the connection
@@ -28,7 +30,7 @@ whitelist of ips which can submit jobs
 #### port
 port shortline should listen on for incoming requests
     
-### DB OPTIONS
+### db options
 shortline has seperate databases for the following modes:
 
 - **production**
