@@ -57,7 +57,8 @@ shortline currently supports mongoDB, MySQL, and Redis.
 Note: valid modes are development, test, and production. Defaults to development.
 
 ```
-start [-m <mode>]* Start the shortline daemon
+start [-m <mode>]
+* Start the shortline daemon
 
 stop
 * Stop the shortline daemon
