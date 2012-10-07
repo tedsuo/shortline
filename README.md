@@ -30,7 +30,7 @@ whitelist of ips which can submit jobs
 #### port
 port shortline should listen on for incoming requests
     
-### DB OPTIONS
+### db options
 shortline has seperate databases for the following modes:
 
 - **production**
@@ -52,9 +52,11 @@ shortline currently supports mongoDB, MySQL, and Redis.
 - **database**
 - **hosts** hosts an array of host:port pairs (port defaults to 27017 if not speficied)
 
-## Command Line
+## COMMAND LINE INTERFACE
 
-Note: valid modes are development, test, and production. Defaults to development.
+The shortline CLI is called "short" and has the following commands:
+
+(Note: for the mode arguments, valid modes are test and production. Defaults to production.)
 
 ```
 start [-m <mode>]
