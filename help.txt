@@ -3,6 +3,8 @@
 --------------------------
 Note: valid modes are development, test, and production. Defaults to development.
 
+install
+      * Create shortline.json config file
 start [-m <mode>]
       * Start the shortline daemon
 stop

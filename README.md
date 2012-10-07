@@ -59,6 +59,9 @@ The shortline CLI is called "short" and has the following commands:
 (Note: for the mode arguments, valid modes are test and production. Defaults to production.)
 
 ```
+install
+* Create shortline.json config file
+
 start [-m <mode>]
 * Start the shortline daemon
 
