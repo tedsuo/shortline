@@ -60,32 +60,32 @@ Note: valid modes are development, test, and production. Defaults to development
 start [-m <mode>]* Start the shortline daemon
 
 stop
-      * Stop the shortline daemon
+* Stop the shortline daemon
 
 add receiver <name> <host> [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]
-      * Add a receiver for the given host
+* Add a receiver for the given host
 
 update receiver <name> [-n <new_name>] [-h <host>] [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]
-      * Update given receiver
+* Update given receiver
 
 ls [-r <receiver_name>] [-m <mode>]
-      * List receivers and paths
+* List receivers and paths
 
 status [-r <receiver_name>] [-m <mode>]
-      * List current jobs
+* List current jobs
 
 remove receiver <name> [-m <mode>]
-      * Remove given receiver, and all children paths
+* Remove given receiver, and all children paths
 
 remove all [-m <mode>]
-      * Remove all data from database
+* Remove all data from database
 
 test
-      * Run the test suite 
+* Run the test suite 
 
 completion
-      * Show the shortline bash completion script
+* Show the shortline bash completion script
 
 help
-      * Display this dialog
+* Display this dialog
 ```
