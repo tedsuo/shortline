@@ -1,36 +1,37 @@
-module.exports = {
-  default_receiver_timeout: 60000,
-  default_receiver_port: 80,
-  default_receiver_concurrency: 5,
-  trusted_ips: [
+{
+  "port": prompt('port',8009),
+
+  "default_receiver_timeout": prompt('default_receiver_timeout','60000'),
+  "default_receiver_port": prompt('default_receiver_port',80),
+  "default_receiver_concurrency": prompt('default_receiver_concurrency',5),
+
+  "trusted_ips": [
     '127.0.0.1'
   ],
-  port: 8009,
-  db: {
-    test: {
+
+  "db": {
+    "test": {
       "adapter": "mongo", // mongo or mysql
-      // "user": "user", //optional
-      // "password": "password", //optional
       "database": "shortline_test",
+      "hosts": [
+        {
+          "host": "localhost"
+        }
+      ]
+    },
+
+// uncomment one of the following examples
+
+// Mongo example    
+
+    "production": {
+      "adapter": "mongo",
+      "database": "shortline_production",
       "hosts": [ // one or more if sharded...
         {
           "host": "localhost",
           "port": 27017, // optional
         }
-      ]
-    },
-    
-    production: {
-      "adapter": "mongo",
-      "database": "shortline_production",
-      "hosts": [
-        {
-          "host": "localhost",
-          "port": 27017, // optional
-        }/* , // For multiple hosts..
-        {
-          "host": "example.com"
-        }*/
       ]
     }
 
@@ -57,4 +58,4 @@ module.exports = {
     }
 */
   }
-};
+}

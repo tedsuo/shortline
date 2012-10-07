@@ -80,6 +80,23 @@ function mobettah_boot(mobettah_cmd, mobettah_config_file){
 
 // short start -p 3030 -c short_conf
 commands = {
+
+  install: function(){
+    var prompter = require('prompter');
+    var install_script = fs.readFileSync(__dirname+"/../misc/shortline.json.example");
+    var CONFIG_PATH = process.cwd()+'/shortline.json';
+
+    console.log('CREATING SHORTLINE CONFIGURATION');
+    var prompt = prompter(install_script,function(err,config_data){
+        fs.writeFileSync(CONFIG_PATH,config_data);
+        console.log(CONFIG_PATH+' created');
+        console.log('TO COMPLETE INSTALL: open shortline.json and edit db settings, then move file to etc/shortline.json');
+        process.exit();
+    });
+    process.stdin.pipe(prompt);
+    prompt.pipe(process.stdout);
+  },
+
   start:function(port){
     exec('ps aux | grep '+ SERVER_PATH +' | grep -v grep | wc -l', function(error, stdout){
       if(error){
