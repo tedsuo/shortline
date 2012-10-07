@@ -30,7 +30,7 @@ whitelist of ips which can submit jobs
 #### port
 port shortline should listen on for incoming requests
     
-### db options
+### DB OPTIONS
 shortline has seperate databases for the following modes:
 
 - **production**
@@ -51,3 +51,41 @@ shortline currently supports mongoDB, MySQL, and Redis.
 - **password** _optional_
 - **database**
 - **hosts** hosts an array of host:port pairs (port defaults to 27017 if not speficied)
+
+## Command Line
+
+Note: valid modes are development, test, and production. Defaults to development.
+
+```
+start [-m <mode>]* Start the shortline daemon
+
+stop
+      * Stop the shortline daemon
+
+add receiver <name> <host> [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]
+      * Add a receiver for the given host
+
+update receiver <name> [-n <new_name>] [-h <host>] [-i <ip_address>] [-c <concurrency>] [-p <port>] [-m <mode>]
+      * Update given receiver
+
+ls [-r <receiver_name>] [-m <mode>]
+      * List receivers and paths
+
+status [-r <receiver_name>] [-m <mode>]
+      * List current jobs
+
+remove receiver <name> [-m <mode>]
+      * Remove given receiver, and all children paths
+
+remove all [-m <mode>]
+      * Remove all data from database
+
+test
+      * Run the test suite 
+
+completion
+      * Show the shortline bash completion script
+
+help
+      * Display this dialog
+```
