@@ -6,4 +6,6 @@ test-server:
 	@NODE_ENV=test ./node_modules/.bin/mocha -R spec -t 5s test/spec/integration/server.js
 test-load:
 	@NODE_ENV=test ./node_modules/.bin/mocha -R spec -t 25s test/spec/integration/load.js
+test-config:
+	@NODE_ENV=test ./node_modules/.bin/mocha -R spec -t 1s test/spec/config/*.js
 .PHONY: test test-unit test-server
