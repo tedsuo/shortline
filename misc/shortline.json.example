@@ -6,12 +6,12 @@
   "default_receiver_concurrency": prompt('default_receiver_concurrency',5),
 
   "trusted_ips": [
-    '127.0.0.1'
+    "127.0.0.1"
   ],
 
   "db": {
     "test": {
-      "adapter": "mongo", // mongo or mysql
+      "adapter": "mongo", 
       "database": "shortline_test",
       "hosts": [
         {
@@ -20,42 +20,15 @@
       ]
     },
 
-// uncomment one of the following examples
-
-// Mongo example    
-
     "production": {
       "adapter": "mongo",
       "database": "shortline_production",
       "hosts": [ // one or more if sharded...
         {
           "host": "localhost",
-          "port": 27017, // optional
+          "port": 27017
         }
       ]
     }
-
-/*  MySQL example
-
-    production: {
-      "adapter": "mysql",
-      "host": "localhost",
-      "user": "user",
-      "password": "password",
-      "database": "shortline_production"
-    }
-
-*/
-
-/*  Redis example
-
-    production: {
-      "adapter": "redis",
-      "host": "localhost", // optional
-      "port": 6379, // optional
-      "password": "password", // optional
-      "key_prefix": "shortline_production"
-    }
-*/
   }
 }
